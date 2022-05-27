@@ -1,0 +1,45 @@
+﻿@model IEnumerable<E_Reviu_LKBUN.Models.Universe>
+
+@{
+    ViewBag.Title = "Pilih";
+    ViewBag.Title2 = "BA BUN";
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+
+            <div class="card-body table-responsive">
+                <table class="display" id="basic-1">
+                    <thead>
+                        <tr>
+                            <th>
+                                Kode
+                            </th>
+                            <th>
+                                Nama
+                            </th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                        <tr>
+                            <td>
+                                @item.Code
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.LongName) <span class="badge badge-info">@item.ShortName</span> <span class="badge badge-success">@item.Unit.Name</span> <span class="badge badge-danger">Risks <span class="badge bagde-pill badge-light">@item.UniverseRisk.Count()</span></span>
+                            </td>
+                            <td style="white-space:nowrap">
+                                <a href="@Url.Action("Create",new { id = item.ID })" class="btn btn-sm btn-info">Select</a><br />
+                            </td>
+                        </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,50 @@
+﻿@model IEnumerable<E_Reviu_LKBUN.Models.Module>
+
+@{
+    ViewBag.Title = "Modul";
+    ViewBag.Title2 = "Proses Bisnis";
+}
+
+<p>
+    @Html.ActionLink("Create New", "Create", null, new { @class = "btn btn-warning" })
+</p>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+
+            <div class="card-body table-responsive">
+                <table class="display" id="basic-1">
+                    <thead>
+                        <tr>
+                            <th>
+                                Proses Bisnis/Modul
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.abbreviation)
+                            </th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.ModuleName)
+                                </td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.abbreviation)
+                                </td>
+                                <td>
+                                    @Html.ActionLink("Edit", "Edit", new { id = item.ID }, new {@class= "btn btn-primary" })
+                                    @Html.ActionLink("Delete", "Delete", new { id = item.ID }, new {@class= "btn btn-danger" })
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

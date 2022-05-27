@@ -1,0 +1,159 @@
+﻿@model IEnumerable<E_Reviu_LKBUN.Models.AssuranceResult>
+
+
+@if (ViewBag.indentifierCount == 1)
+{
+    var groupedData = Model.GroupBy(x => new { Identifier1 = x.Identifier1 });
+    foreach (var data in groupedData)
+    {
+        <tr>
+            <td>@data.Key.Identifier1</td>
+            @foreach (var item in data.OrderBy(y => y.ColumnName))
+            {
+                <td>@item.ColumnValue</td>
+            }
+        </tr>
+    }
+}
+
+else if (ViewBag.indentifierCount == 2)
+{
+    var groupedData = Model.GroupBy(x => new { Identifier1 = x.Identifier1, Identifier2 = x.Identifier2 });
+    foreach (var data in groupedData)
+    {
+        <tr>
+            <td>@data.Key.Identifier1</td>
+            <td>@data.Key.Identifier2</td>
+            @foreach (var item in data.OrderBy(y => y.ColumnName))
+            {
+                <td>@item.ColumnValue</td>
+            }
+        </tr>
+    }
+}
+
+else if (ViewBag.indentifierCount == 3)
+{
+    var groupedData = Model.GroupBy(x => new { Identifier1 = x.Identifier1, Identifier2 = x.Identifier2, Identifier3 = x.Identifier3 });
+    foreach (var data in groupedData)
+    {
+        <tr>
+            <td>@data.Key.Identifier1</td>
+            <td>@data.Key.Identifier2</td>
+            <td>@data.Key.Identifier3</td>
+            @foreach (var item in data.OrderBy(y => y.ColumnName))
+            {
+                <td>@item.ColumnValue</td>
+            }
+        </tr>
+    }
+}
+
+else if (ViewBag.indentifierCount == 4)
+{
+    var groupedData = Model.GroupBy(x => new { Identifier1 = x.Identifier1, Identifier2 = x.Identifier2, Identifier3 = x.Identifier3, Identifier4 = x.Identifier4 });
+    foreach (var data in groupedData)
+    {
+        <tr>
+            <td>@data.Key.Identifier1</td>
+            <td>@data.Key.Identifier2</td>
+            <td>@data.Key.Identifier3</td>
+            <td>@data.Key.Identifier4</td>
+            @foreach (var item in data.OrderBy(y => y.ColumnName))
+            {
+                <td>@item.ColumnValue</td>
+            }
+        </tr>
+    }
+}
+
+else if (ViewBag.indentifierCount == 5)
+{
+    var groupedData = Model.GroupBy(x => new { Identifier1 = x.Identifier1, Identifier2 = x.Identifier2, Identifier3 = x.Identifier3, Identifier4 = x.Identifier4, Identifier5 = x.Identifier5 });
+    foreach (var data in groupedData)
+    {
+        <tr>
+            <td>@data.Key.Identifier1</td>
+            <td>@data.Key.Identifier2</td>
+            <td>@data.Key.Identifier3</td>
+            <td>@data.Key.Identifier4</td>
+            <td>@data.Key.Identifier5</td>
+            @foreach (var item in data.OrderBy(y => y.ColumnName))
+            {
+                <td>@item.ColumnValue</td>
+            }
+        </tr>
+    }
+}
+
+else if (ViewBag.indentifierCount == 6)
+{
+    var groupedData = Model.GroupBy(x => new { Identifier1 = x.Identifier1, Identifier2 = x.Identifier2, Identifier3 = x.Identifier3, Identifier4 = x.Identifier4, Identifier5 = x.Identifier5, Identifier6 = x.Identifier6 });
+    foreach (var data in groupedData)
+    {
+        <tr>
+            <td>@data.Key.Identifier1</td>
+            <td>@data.Key.Identifier2</td>
+            <td>@data.Key.Identifier3</td>
+            <td>@data.Key.Identifier4</td>
+            <td>@data.Key.Identifier5</td>
+            <td>@data.Key.Identifier6</td>
+
+            @foreach (var item in data.OrderBy(y => y.ColumnName))
+            {
+                <td>@item.ColumnValue</td>
+            }
+        </tr>
+    }
+}
+
+else if (ViewBag.indentifierCount == 7)
+{
+    var groupedData = Model.GroupBy(x => new { Identifier1 = x.Identifier1, Identifier2 = x.Identifier2, Identifier3 = x.Identifier3, Identifier4 = x.Identifier4, Identifier5 = x.Identifier5, Identifier6 = x.Identifier6, Identifier7 = x.Identifier7 });
+    foreach (var data in groupedData)
+    {
+<tr>
+    <td>@data.Key.Identifier1</td>
+    <td>@data.Key.Identifier2</td>
+    <td>@data.Key.Identifier3</td>
+    <td>@data.Key.Identifier4</td>
+    <td>@data.Key.Identifier5</td>
+    <td>@data.Key.Identifier6</td>
+    <td>@data.Key.Identifier7</td>
+
+    @foreach (var item in data.OrderBy(y => y.ColumnName))
+    {
+        <td>@item.ColumnValue</td>
+    }
+</tr>
+    }
+}
+
+@*foreach (var item in Model)
+    {
+    <tr>
+        <td>@item.Identifier1</td>
+    </tr>
+        }
+    }
+
+
+    @foreach (var item in Model)
+    {
+
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.Risk.Code)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Risk.Reference)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Risk.Risiko) <span class="badge badge-primary">@item.Risk.RiskCategory.category</span> <span class="badge badge-info">@item.Risk.Module.ModuleName</span>
+            </td>
+            <td style="white-space:nowrap">
+                <a href="@Url.Action("Result",new { id=Model.ID, c=item.ID })" class="btn btn-sm btn-danger">Hasil Pengujian <span class="badge badge-light"> @{Html.RenderAction("AnomalyCounterPerTest", new { id = Model.ID, r = item.ID });} </span></a>
+            </td>
+        </tr>
+
+    }*@

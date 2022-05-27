@@ -1,0 +1,27 @@
+﻿@model E_Reviu_LKBUN.Models.Assurance
+
+@{
+    ViewBag.Title = "Hasil Pengujian";
+    ViewBag.Title2 = Model.ST;
+    ViewBag.Subtitle = Model.Universe.ShortName;
+    var ReportName = ViewBag.Subtitle + " " + Model.SPANReportPeriod;
+}
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card shadow-0 border b-r-0">
+                @*<div class="card-header card-header-info">
+                <h4 class="card-title">@ViewBag.Title</h4>
+
+                </div>*@
+                <div class="card-body table-responsive">
+                    <button class="btn btn-md btn-success" onclick="javascript:downloadCHR('@ReportName')">Download Hasil Reviu</button> <a href="@Url.Action("Details", new { id = Model.ID })" class="btn btn-md btn-primary">Lihat Rincian Hasil Pengujian</a> <a href="@Url.Action("Response", new { id = Model.ID })" class="btn btn-md btn-danger">Tanggapan Hasil Pengujian</a> 
+                    @if (Model.Universe.Code == "999.00.XX")
+                    {<a href="@Url.Action("ListKPPN", new { id = Model.ID })" class="btn btn-md btn-info">Rincian Hasil per KPPN</a>} <a href="@Url.Action("Index")" class="btn btn-md btn-warning">Back</a> <br /><br />
+                    <div id="CHR">
+                        @{Html.RenderAction("CHR", new { id = Model.ID }); }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>

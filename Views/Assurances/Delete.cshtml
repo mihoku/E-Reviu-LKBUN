@@ -1,0 +1,88 @@
+﻿@model E_Reviu_LKBUN.Models.Assurance
+
+@{
+    ViewBag.Title = "Delete";
+}
+
+<h2>Delete</h2>
+
+<h3>Are you sure you want to delete this?</h3>
+<div>
+    <h4>Assurance</h4>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.Universe.ShortName)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Universe.ShortName)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.ST)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.ST)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Date)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Date)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.SPANReportPeriod)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.SPANReportPeriod)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.SPANBeginReportPeriod)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.SPANBeginReportPeriod)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.SPANPreviousReportPeriod)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.SPANPreviousReportPeriod)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.ErekonReportMonth)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.ErekonReportMonth)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.ErekonReportYear)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.ErekonReportYear)
+        </dd>
+
+    </dl>
+
+    @using (Html.BeginForm()) {
+        @Html.AntiForgeryToken()
+
+        <div class="form-actions no-color">
+            <input type="submit" value="Delete" class="btn btn-default" /> |
+            @Html.ActionLink("Back to List", "Index")
+        </div>
+    }
+</div>

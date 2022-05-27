@@ -1,0 +1,42 @@
+﻿@model E_Reviu_LKBUN.Models.Responses
+
+@{
+    ViewBag.Title = "Details";
+}
+
+<h2>Details</h2>
+
+<div>
+    <h4>Responses</h4>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.Assurance.ST)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Assurance.ST)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.UniverseDetails.Area)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.UniverseDetails.Area)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Content)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Content)
+        </dd>
+
+    </dl>
+</div>
+<p>
+    @Html.ActionLink("Edit", "Edit", new { id = Model.ID }) |
+    @Html.ActionLink("Back to List", "Index")
+</p>

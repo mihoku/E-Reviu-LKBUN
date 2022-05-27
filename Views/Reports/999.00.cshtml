@@ -1,0 +1,2379 @@
+﻿@model E_Reviu_LKBUN.Models.Assurance
+
+
+@**Neraca d. Rekening Kas di KPPN*@
+@*Kas di KPPN menggunakan RGL28 dan RGL 15*@
+@{
+
+    var RekeningKPPN_Satker = Model.AssuranceResult.Where(y => y.RiskCode == "RGL15" && y.ColumnName == "SALDO_NERACA" && y.ColumnValue != 0)
+        .GroupBy(x => new { Identifier2 = x.Identifier2 });
+    var Saldo_RekeningKPPN_Neraca = Model.AssuranceResult.Where(y => y.RiskCode == "RGL15" && y.ColumnName == "SALDO_NERACA").Sum(y => y.ColumnValue);
+    var Saldo_RekeningKPPN_LedgerKas = Model.AssuranceResult.Where(y => y.RiskCode == "RGL15" && y.ColumnName == "SALDO_TRIAL_BALANCE").Sum(y => y.ColumnValue);
+    var Saldo_RekeningKPPN_LedgerAkrual = Model.AssuranceResult.Where(y => y.RiskCode == "RGL28" && y.ColumnName == "AMOUNT_ACCRUAL").Sum(y => y.ColumnValue);
+    var Saldo_RekeningKPPN_NeracaLedger_Selisih = Model.AssuranceResult.Where(y => y.RiskCode == "RGL15" && y.ColumnName == "SELISIH").Sum(y => y.ColumnValue);
+    var Saldo_RekeningKPPN_AkrualKas_Selisih = Model.AssuranceResult.Where(y => y.RiskCode == "RGL28" && y.ColumnName == "SELISIH").Sum(y => y.ColumnValue);
+    var Saldo_RekeningKPPN_AkrualKas_List = Model.AssuranceResult.Where(y => y.RiskCode == "RGL28" && y.Identifier2 == ViewBag.KPPN);
+    var groupedData_RekeningKPPN_Neraca_Ledger_Selisih = Model.AssuranceResult.Where(y => y.RiskCode == "RGL15" && y.ColumnName == "SELISIH" && y.ColumnValue != 0).GroupBy(x => new { Identifier2 = x.Identifier2 });
+    var groupedData_RekeningKPPN_Akrual_Kas_Selisih = Model.AssuranceResult.Where(y => y.RiskCode == "RGL28" && y.ColumnName == "SELISIH" && y.ColumnValue != 0).GroupBy(x => new { Identifier2 = x.Identifier2 });
+
+    @*Neraca e. Kas dalam Transito*@
+var Saldo_KasDalamTransito_Neraca = Model.AssuranceResult.Where(y => y.RiskCode == "RR6" && y.ColumnName == "SALDO_NERACA_AKRUAL").Sum(y => y.ColumnValue);
+var Saldo_1115_Akrual = Model.AssuranceResult.Where(y => y.RiskCode == "RR6" && y.ColumnName == "SALDO_1115_AKRUAL").Sum(y => y.ColumnValue);
+var Saldo_1115_Cash = Model.AssuranceResult.Where(y => y.RiskCode == "RR6" && y.ColumnName == "TOTAL_AKUN_1115_CASH").Sum(y => y.ColumnValue);
+var Saldo_818111_Cash = Model.AssuranceResult.Where(y => y.RiskCode == "RR6" && y.ColumnName == "TOTAL_AKUN_818111").Sum(y => y.ColumnValue);
+var Saldo_828111_Cash = Model.AssuranceResult.Where(y => y.RiskCode == "RR6" && y.ColumnName == "TOTAL_AKUN_828111").Sum(y => y.ColumnValue);
+var Selisih_KDT_Cash = Saldo_KasDalamTransito_Neraca - (Saldo_1115_Cash + Saldo_818111_Cash + Saldo_828111_Cash);
+var Selisih_KDT_Akrual = Model.AssuranceResult.Where(y => y.RiskCode == "RR6" && y.ColumnName == "SELISIH_AKRUAL").Sum(y => y.ColumnValue);
+
+    @*Neraca f. Saldo Kas di Bendahara Pengeluaran*@
+    @*Informasi Umum Satker Kas BP*@
+var SatkerBP = Model.AssuranceResult.Where(y => y.RiskCode == "RGL01").GroupBy(y => y.Identifier4).Count();
+var KPPNSatkerBP = Model.AssuranceResult.Where(y => y.RiskCode == "RGL01").GroupBy(y => y.Identifier2).Count();
+var groupedData_ERekon_SPAN_Satker_Selisih_BP = Model.AssuranceResult.Where(y => y.RiskCode == "RGL01" && (y.ColumnName == "AMOUNT_ACCRUAL" || y.ColumnName == "SAI" || y.ColumnName == "SIAP" || y.ColumnName == "SELISIH_SIAP_SAI"))
+  .GroupBy(x => new { Identifier2 = x.Identifier2, Identifier4 = x.Identifier4, Identifier1 = x.Identifier1 })
+  .Where(x => x.OrderBy(y => y.ColumnName).Skip(2).First().ColumnValue != 0 //selisih SIAP SAI
+                || x.OrderBy(y => y.ColumnName).First().ColumnValue - x.OrderBy(y => y.ColumnName).Last().ColumnValue != 0 //Selisih SPAN dengan E-Rekon SIAP
+                || x.OrderBy(y => y.ColumnName).First().ColumnValue - x.OrderBy(y => y.ColumnName).Skip(1).First().ColumnValue != 0); //Selisih SPAN dengan E-Rekon SAI
+
+    @*Saldo BP SPAN (Ledger kas dan ledger akrual)*@
+var SaldoBPKas = Model.AssuranceResult.Where(y => y.RiskCode == "RGL01" && y.ColumnName == "AMOUNT_CASH").Sum(y => y.ColumnValue);
+var SaldoBPAkrual = Model.AssuranceResult.Where(y => y.RiskCode == "RGL01" && y.ColumnName == "AMOUNT_ACCRUAL").Sum(y => y.ColumnValue);
+var SaldoBPSelisih = Model.AssuranceResult.Where(y => y.RiskCode == "RGL01" && y.ColumnName == "SELISIH").Sum(y => y.ColumnValue);
+var SatkerBP_Akrual_Kas_Selisih = Model.AssuranceResult.Where(y => y.RiskCode == "RGL01" && y.ColumnName == "SELISIH" && y.ColumnValue != 0).GroupBy(y => y.Identifier4).Count();
+var KPPNSatkerBP_Akrual_Kas_Selisih = Model.AssuranceResult.Where(y => y.RiskCode == "RGL01" && y.ColumnName == "SELISIH" && y.ColumnValue != 0).GroupBy(y => y.Identifier2).Count();
+var SaldoBP_SPAN_Minus = Model.AssuranceResult.Where(y => (y.RiskCode == "RGL01" && y.ColumnName == "AMOUNT_ACCRUAL" && y.ColumnValue < 0) || (y.RiskCode == "RGL01" && y.ColumnName == "AMOUNT_CASH" && y.ColumnValue < 0))
+    .GroupBy(y => new { Identifier4 = y.Identifier4, Identifier2 = y.Identifier2 });
+
+    @*Saldo BP SPAN dan ERekon*@
+var SaldoBP_ERekon_SIAP = Model.AssuranceResult.Where(y => y.RiskCode == "RGL01" && y.ColumnName == "SIAP").Sum(y => y.ColumnValue);
+var SaldoBP_ERekon_SAI = Model.AssuranceResult.Where(y => y.RiskCode == "RGL01" && y.ColumnName == "SAI").Sum(y => y.ColumnValue);
+var SaldoBP_ERekon_SIAP_SAI_Selisih = Model.AssuranceResult.Where(y => y.RiskCode == "RGL01" && y.ColumnName == "SELISIH_SIAP_SAI").Sum(y => y.ColumnValue);
+var SatkerBP_ERekon_SIAP_SAI_Selisih = Model.AssuranceResult.Where(y => y.RiskCode == "RGL01" && y.ColumnName == "SELISIH_SIAP_SAI" && y.ColumnValue != 0).GroupBy(y => y.Identifier4).Count();
+var KPPNSatkerBP_ERekon_SIAP_SAI_Selisih = Model.AssuranceResult.Where(y => y.RiskCode == "RGL01" && y.ColumnName == "SELISIH_SIAP_SAI" && y.ColumnValue != 0).GroupBy(y => y.Identifier2).Count();
+var SaldoBP_Selisih_ERekon_SAI_SPAN = SaldoBP_ERekon_SAI - SaldoBPAkrual;
+var SaldoBP_Selisih_ERekon_SIAP_SPAN = SaldoBP_ERekon_SIAP - SaldoBPAkrual;
+
+    @*Neraca i. Saldo Kas BLU*@
+    @*Informasi umum satker BLU*@
+var SatkerBLU = Model.AssuranceResult.Where(y => y.RiskCode == "RGL02").GroupBy(y => y.Identifier5).Count();
+var KPPNSatkerBLU = Model.AssuranceResult.Where(y => y.RiskCode == "RGL02").GroupBy(y => y.Identifier2).Count();
+var groupedData_ERekon_SPAN_Satker_Selisih_BLU = Model.AssuranceResult.Where(y => y.RiskCode == "RGL02" && (y.ColumnName == "SALDO_KAS_BLU" || y.ColumnName == "KASBLU_SAI" || y.ColumnName == "KASBLU_SIAP" || y.ColumnName == "SELISIH_SIAP_SAI"))
+.GroupBy(x => new { Identifier2 = x.Identifier2, Identifier5 = x.Identifier5, Identifier1 = x.Identifier1 })
+.Where(x => x.OrderBy(y => y.ColumnName).Last().ColumnValue != 0 //Selisih SIAP SAI
+              || x.OrderBy(y => y.ColumnName).Skip(2).First().ColumnValue - x.OrderBy(y => y.ColumnName).Skip(1).First().ColumnValue != 0 //Selisih SPAN dengan E-Rekon SIAP
+              || x.OrderBy(y => y.ColumnName).Skip(2).First().ColumnValue - x.OrderBy(y => y.ColumnName).First().ColumnValue != 0); //Selisih SPAN dengan E-Rekon SAI
+
+    @*Saldo BLU Neraca KPPN dan LAK Face*@
+var SaldoBLU_NeracaKPPN = Model.AssuranceResult.Where(y => y.RiskCode == "RGL02" && y.ColumnName == "SALDO_KAS_BLU").Sum(y => y.ColumnValue);
+var SaldoBLU_LAKFace = Model.AssuranceResult.Where(y => y.RiskCode == "RGL02" && y.ColumnName == "SALDO_KAS_LAK").Sum(y => y.ColumnValue);
+var SaldoBLU_NeracaKPPN_LAKFace_Selisih = Model.AssuranceResult.Where(y => y.RiskCode == "RGL02" && y.ColumnName == "SELISIH_SALDO_KAS_LAK_BLU").Sum(y => y.ColumnValue);
+var SatkerBLU_NeracaKPPN_LAKFace_Selisih = Model.AssuranceResult.Where(y => y.RiskCode == "RGL02" && y.ColumnName == "SELISIH_SALDO_KAS_LAK_BLU" && y.ColumnValue != 0).GroupBy(y => y.Identifier5).Count();
+var KPPNSatkerBLU_NeracaKPPN_LAKFace_Selisih = Model.AssuranceResult.Where(y => y.RiskCode == "RGL02" && y.ColumnName == "SELISIH_SALDO_KAS_LAK_BLU" && y.ColumnValue != 0).GroupBy(y => y.Identifier2).Count();
+    @*Saldo BLU ERekon dan SPAN*@
+var SaldoBLU_ERekon_SAI = Model.AssuranceResult.Where(y => y.RiskCode == "RGL02" && y.ColumnName == "KASBLU_SAI").Sum(y => y.ColumnValue);
+var SaldoBLU_ERekon_SIAP = Model.AssuranceResult.Where(y => y.RiskCode == "RGL02" && y.ColumnName == "KASBLU_SIAP").Sum(y => y.ColumnValue);
+var SaldoBLU_ERekon_SIAP_SAI_Selisih = Model.AssuranceResult.Where(y => y.RiskCode == "RGL02" && y.ColumnName == "SELISIH_SIAP_SAI").Sum(y => y.ColumnValue);
+var SatkerBLU_ERekon_SIAP_SAI_Selisih = Model.AssuranceResult.Where(y => (y.RiskCode == "RGL02" && y.ColumnName == "SELISIH_SIAP_SAI" && y.ColumnValue != 0)).GroupBy(y => y.Identifier5).Count();
+var KPPNSatkerBLU_ERekon_SIAP_SAI_Selisih = Model.AssuranceResult.Where(y => y.RiskCode == "RGL02" && y.ColumnName == "SELISIH_SIAP_SAI" && y.ColumnValue != 0).GroupBy(y => y.Identifier2).Count();
+var SaldoBLU_Selisih_ERekon_SAI_SPAN = SaldoBLU_ERekon_SAI - SaldoBLU_NeracaKPPN;
+var SaldoBLU_Selisih_ERekon_SIAP_SPAN = SaldoBLU_ERekon_SIAP - SaldoBLU_NeracaKPPN;
+var SaldoBLU_SPAN_Minus = Model.AssuranceResult.Where(y => (y.RiskCode == "RGL02" && y.ColumnName == "SALDO_KAS_LAK" && y.ColumnValue < 0) || (y.RiskCode == "RGL02" && y.ColumnName == "SALDO_KAS_BLU" && y.ColumnValue < 0))
+    .GroupBy(y => new { Identifier2 = y.Identifier2, Identifier4 = y.Identifier4 });
+    @*Saldo BLU Ledger kas dan ledger akrual*@
+var SaldoBLUKas = Model.AssuranceResult.Where(y => y.RiskCode == "RGL31" && y.ColumnName == "AMOUNT_CASH").Sum(y => y.ColumnValue);
+var SaldoBLUAkrual = Model.AssuranceResult.Where(y => y.RiskCode == "RGL31" && y.ColumnName == "AMOUNT_ACCRUAL").Sum(y => y.ColumnValue);
+var SaldoBLU_Akrual_Kas_Selisih = Model.AssuranceResult.Where(y => y.RiskCode == "RGL31" && y.ColumnName == "SELISIH").Sum(y => y.ColumnValue);
+var SatkerBLU_Akrual_Kas_Selisih = Model.AssuranceResult.Where(y => y.RiskCode == "RGL31" && y.ColumnName == "SELISIH" && y.ColumnValue != 0).GroupBy(y => y.Identifier1).Count();
+var KPPNSatkerBLU_Akrual_Kas_Selisih = Model.AssuranceResult.Where(y => y.RiskCode == "RGL31" && y.ColumnName == "SELISIH" && y.ColumnValue != 0).GroupBy(y => y.Identifier2).Count();
+
+    @*Olah Data Saldo Kas Hibah*@
+    @*Informasi Umum Satker Kas Hibah*@
+var SatkerHibah = Model.AssuranceResult.Where(y => y.RiskCode == "RGL03").GroupBy(y => y.Identifier5).Count();
+var KPPNSatkerHibah = Model.AssuranceResult.Where(y => y.RiskCode == "RGL03").GroupBy(y => y.Identifier2).Count();
+var groupedData_ERekon_SPAN_Satker_Selisih_Hibah = Model.AssuranceResult.Where(y => y.RiskCode == "RGL03" && (y.ColumnName == "SALDO_KAS_KEMENTRIAN" || y.ColumnName == "SAI" || y.ColumnName == "SIAP" || y.ColumnName == "SELISIH_SIAP_SAI"))
+.GroupBy(x => new { Identifier2 = x.Identifier2, Identifier5 = x.Identifier5, Identifier1 = x.Identifier1 })
+.Where(x => x.OrderBy(y => y.ColumnName).Skip(2).First().ColumnValue != 0 //selisih SIAP SAI
+            || x.OrderBy(y => y.ColumnName).Skip(1).First().ColumnValue - x.OrderBy(y => y.ColumnName).Last().ColumnValue != 0 //Selisih SPAN dengan E-Rekon SIAP
+            || x.OrderBy(y => y.ColumnName).Skip(1).First().ColumnValue - x.OrderBy(y => y.ColumnName).First().ColumnValue != 0); //Selisih SPAN dengan E-Rekon SAI
+
+    @*Saldo Hibah Neraca KPPN dan LAK Face*@
+var SaldoHibah_NeracaKPPN = Model.AssuranceResult.Where(y => y.RiskCode == "RGL03" && y.ColumnName == "SALDO_KAS_KEMENTRIAN").Sum(y => y.ColumnValue);
+var SaldoHibah_LAKFace = Model.AssuranceResult.Where(y => y.RiskCode == "RGL03" && y.ColumnName == "SALDO_KAS_LAK").Sum(y => y.ColumnValue);
+var SaldoHibah_NeracaKPPN_LAKFace_Selisih = Model.AssuranceResult.Where(y => y.RiskCode == "RGL03" && y.ColumnName == "SELISIH_SALDO_KAS_LAK_KEMENTRIAN").Sum(y => y.ColumnValue);
+var SatkerHibah_NeracaKPPN_LAKFace_Selisih = Model.AssuranceResult.Where(y => y.RiskCode == "RGL03" && y.ColumnName == "SELISIH_SALDO_KAS_LAK_KEMENTRIAN" && y.ColumnValue != 0).GroupBy(y => y.Identifier5).Count();
+var KPPNSatkerHibah_NeracaKPPN_LAKFace_Selisih = Model.AssuranceResult.Where(y => y.RiskCode == "RGL03" && y.ColumnName == "SELISIH_SALDO_KAS_LAK_KEMENTRIAN" && y.ColumnValue != 0).GroupBy(y => y.Identifier2).Count();
+
+    @*Saldo Hibah ERekon dan SPAN*@
+var SaldoHibah_ERekon_SAI = Model.AssuranceResult.Where(y => y.RiskCode == "RGL03" && y.ColumnName == "SAI").Sum(y => y.ColumnValue);
+var SaldoHibah_ERekon_SIAP = Model.AssuranceResult.Where(y => y.RiskCode == "RGL03" && y.ColumnName == "SIAP").Sum(y => y.ColumnValue);
+var SaldoHibah_ERekon_SIAP_SAI_Selisih = Model.AssuranceResult.Where(y => y.RiskCode == "RGL03" && y.ColumnName == "SELISIH_SIAP_SAI").Sum(y => y.ColumnValue);
+var SatkerHibah_ERekon_SIAP_SAI_Selisih = Model.AssuranceResult.Where(y => (y.RiskCode == "RGL03" && y.ColumnName == "SELISIH_SIAP_SAI" && y.ColumnValue != 0)).GroupBy(y => y.Identifier5).Count();
+var KPPNSatkerHibah_ERekon_SIAP_SAI_Selisih = Model.AssuranceResult.Where(y => y.RiskCode == "RGL03" && y.ColumnName == "SELISIH_SIAP_SAI" && y.ColumnValue != 0).GroupBy(y => y.Identifier2).Count();
+var SaldoHibah_Selisih_ERekon_SAI_SPAN = SaldoHibah_ERekon_SAI - SaldoHibah_NeracaKPPN;
+var SaldoHibah_Selisih_ERekon_SIAP_SPAN = SaldoHibah_ERekon_SIAP - SaldoHibah_NeracaKPPN;
+var SaldoHibah_SPAN_Minus = Model.AssuranceResult.Where(y => (y.RiskCode == "RGL03" && y.ColumnName == "SALDO_KAS_LAK" && y.ColumnValue < 0) || (y.RiskCode == "RGL03" && y.ColumnName == "SALDO_KAS_KEMENTRIAN" && y.ColumnValue < 0))
+    .GroupBy(y => new { Identifier2 = y.Identifier2, Identifier5 = y.Identifier5 });
+
+    @*Saldo Hibah Ledger kas dan ledger akrual*@
+var SaldoHibahKas = Model.AssuranceResult.Where(y => y.RiskCode == "RGL32" && y.ColumnName == "AMOUNT_CASH").Sum(y => y.ColumnValue);
+var SaldoHibahAkrual = Model.AssuranceResult.Where(y => y.RiskCode == "RGL32" && y.ColumnName == "AMOUNT_ACCRUAL").Sum(y => y.ColumnValue);
+var SaldoHibah_Akrual_Kas_Selisih = Model.AssuranceResult.Where(y => y.RiskCode == "RGL32" && y.ColumnName == "SELISIH").Sum(y => y.ColumnValue);
+var SatkerHibah_Akrual_Kas_Selisih = Model.AssuranceResult.Where(y => y.RiskCode == "RGL32" && y.ColumnName == "SELISIH" && y.ColumnValue != 0).GroupBy(y => y.Identifier1).Count();
+var KPPNSatkerHibah_Akrual_Kas_Selisih = Model.AssuranceResult.Where(y => y.RiskCode == "RGL32" && y.ColumnName == "SELISIH" && y.ColumnValue != 0).GroupBy(y => y.Identifier2).Count();
+
+}
+
+<ol type="A">
+    <li><strong>Laporan Arus Kas</strong></li>
+   
+    <ol type="1">
+        <li><strong>Penyajian Saldo Awal Kas LAK</strong></li>
+        @*Variable declaration*@
+        @{
+            var LAK_SaldoAwal_TahunBerjalan = Model.AssuranceResult.Where(y => y.RiskCode == "RGL44" && y.ColumnName == "SALDO_AWAL_KAS").Sum(y => y.ColumnValue);
+            var LAK_SaldoAkhir_TahunLalu = Model.AssuranceResult.Where(y => y.RiskCode == "RGL44" && y.ColumnName == "SALDO_AKHIR_KAS_TAHUN_LALU").Sum(y => y.ColumnValue);
+            var LAK_SaldoAwal_Selisih = Model.AssuranceResult.Where(y => y.RiskCode == "RGL44" && y.ColumnName == "SELISIH").Sum(y => y.ColumnValue);
+            var lastyear = Model.ErekonReportYear - 1;
+        }
+        @if (LAK_SaldoAwal_Selisih == 0)
+        {
+    <p align="justify">
+        Berdasarkan hasil reviu diketahui bahwa penyajian informasi Saldo Awal Kas T.A. @Model.ErekonReportYear adalah sebesar Rp @String.Format("{0:n}", LAK_SaldoAwal_TahunBerjalan) dan telah sesuai dengan Saldo Akhir Kas per 31 Desember @lastyear (audited) dengan rincian sebagai berikut:
+    </p>
+        }
+
+        else
+        {
+    <p align="justify">
+        Berdasarkan hasil reviu diketahui bahwa penyajian informasi Saldo Awal Kas T.A. @Model.ErekonReportYear adalah sebesar Rp @String.Format("{0:n}", LAK_SaldoAwal_TahunBerjalan). Saldo tersebut memiliki selisih sebesar Rp @String.Format("{0:n}", LAK_SaldoAkhir_TahunLalu) dengan Saldo Akhir Kas per 31 Desember @lastyear (audited) dengan rincian sebagai berikut:
+    </p>
+        }
+
+        <table border="1" class="dataTable">
+            <thead>
+                <tr>
+                    <th>
+                        Uraian
+                    </th>
+                    <th>
+                        Saldo LK Audited @lastyear
+                    </th>
+                    <th>
+                        Saldo Awal @Model.ErekonReportYear (NL SPAN)
+                    </th>
+                    <th>Selisih</th>
+                </tr>
+            </thead>
+            <tbody>
+                @{var SaldoAwal_LAK_groupedData = Model.AssuranceResult.Where(y => y.RiskCode == "RGL44").GroupBy(x => new { Identifier2 = x.Identifier2 }); }
+                @foreach (var data in SaldoAwal_LAK_groupedData)
+                {
+                <tr>
+                    <td>@data.Key.Identifier2</td>
+                    @foreach (var item in data.OrderBy(y => y.ColumnName))
+                    {
+                        <td>@item.ColumnValue</td>
+                    }
+                </tr>
+                }
+            <tr>
+                <td><strong>Jumlah</strong></td>
+                <td><strong>@String.Format("{0:n}", LAK_SaldoAkhir_TahunLalu)</strong></td>
+                <td><strong>@String.Format("{0:n}", LAK_SaldoAwal_TahunBerjalan)</strong></td>
+                <td><strong>@String.Format("{0:n}", LAK_SaldoAwal_Selisih)</strong></td>
+            </tr>
+            </tbody>
+        </table>
+        
+        <li><strong>Mutasi Kas Tahun Berjalan</strong></li>
+        @*Variable preparations*@
+        @{
+            @*Arus Kas Masuk Operasional*@
+            var ArusKasMasuk_Operasional_LAK = Model.AssuranceResult.Where(y => y.RiskCode == "RR15" && y.ColumnName == "ARUS_MASUK_OPERASI").Sum(y => y.ColumnValue);
+            var ArusKasMasuk_Operasional_LedgerKas = Model.AssuranceResult.Where(y => y.RiskCode == "RR15" && y.ColumnName != "ARUS_MASUK_OPERASI" && y.ColumnName != "SELISIH").Sum(y => y.ColumnValue);
+            var ArusKasMasuk_Operasional_Selisih = Model.AssuranceResult.Where(y => y.RiskCode == "RR15" && y.ColumnName == "SELISIH").Sum(y => y.ColumnValue);
+
+            @*Arus Kas Keluar Operasional*@
+            var ArusKasKeluar_Operasional_LAK = Model.AssuranceResult.Where(y => y.RiskCode == "RR19" && y.ColumnName == "ARUS_KELUAR_OPERASI").Sum(y => y.ColumnValue);
+            var ArusKasKeluar_Operasional_LedgerKas = Model.AssuranceResult.Where(y => y.RiskCode == "RR19" && y.ColumnName != "ARUS_KELUAR_OPERASI" && y.ColumnName != "SELISIH").Sum(y => y.ColumnValue);
+            var ArusKasKeluar_Operasional_Selisih = Model.AssuranceResult.Where(y => y.RiskCode == "RR19" && y.ColumnName == "SELISIH").Sum(y => y.ColumnValue);
+
+            @*Arus Kas Bersih Operasional*@
+            var ArusKasBersih_Operasional_LAK = ArusKasMasuk_Operasional_LAK - ArusKasKeluar_Operasional_LAK;
+
+            @*Arus Kas Masuk Investasi*@
+            var ArusKasMasuk_Investasi_LAK = Model.AssuranceResult.Where(y => y.RiskCode == "RR16" && y.ColumnName == "ARUS_MASUK_INVESTASI").Sum(y => y.ColumnValue);
+            var ArusKasMasuk_Investasi_LedgerKas = Model.AssuranceResult.Where(y => y.RiskCode == "RR16" && y.ColumnName != "ARUS_MASUK_INVESTASI" && y.ColumnName != "SELISIH").Sum(y => y.ColumnValue);
+            var ArusKasMasuk_Investasi_Selisih = Model.AssuranceResult.Where(y => y.RiskCode == "RR16" && y.ColumnName == "SELISIH").Sum(y => y.ColumnValue);
+
+            @*Arus Kas Keluar Investasi*@
+            var ArusKasKeluar_Investasi_LAK = Model.AssuranceResult.Where(y => y.RiskCode == "RR20" && y.ColumnName == "ARUS_KELUAR_INVESTASI").Sum(y => y.ColumnValue);
+            var ArusKasKeluar_Investasi_LedgerKas = Model.AssuranceResult.Where(y => y.RiskCode == "RR20" && y.ColumnName != "ARUS_KELUAR_INVESTASI" && y.ColumnName != "SELISIH").Sum(y => y.ColumnValue);
+            var ArusKasKeluar_Investasi_Selisih = Model.AssuranceResult.Where(y => y.RiskCode == "RR20" && y.ColumnName == "SELISIH").Sum(y => y.ColumnValue);
+
+            @*Arus Kas Bersih Investasi*@
+            var ArusKasBersih_Investasi_LAK = ArusKasMasuk_Investasi_LAK - ArusKasKeluar_Investasi_LAK;
+
+            @*Arus Kas Keluar Pendanaan*@
+            var ArusKasKeluar_Pendanaan_LAK = Model.AssuranceResult.Where(y => y.RiskCode == "RR21" && y.ColumnName == "ARUS_KELUAR_PENDANAAN").Sum(y => y.ColumnValue);
+            var ArusKasKeluar_Pendanaan_LedgerKas = Model.AssuranceResult.Where(y => y.RiskCode == "RR21" && y.ColumnName != "ARUS_KELUAR_PENDANAAN" && y.ColumnName != "SELISIH").Sum(y => y.ColumnValue);
+            var ArusKasKeluar_Pendanaan_Selisih = Model.AssuranceResult.Where(y => y.RiskCode == "RR21" && y.ColumnName == "SELISIH").Sum(y => y.ColumnValue);
+
+            @*Arus Kas Masuk Pendanaan*@
+            var ArusKasMasuk_Pendanaan_LAK = Model.AssuranceResult.Where(y => y.RiskCode == "RR17" && y.ColumnName == "ARUS_MASUK_PENDANAAN").Sum(y => y.ColumnValue);
+            var ArusKasMasuk_Pendanaan_LedgerKas = Model.AssuranceResult.Where(y => y.RiskCode == "RR17" && y.ColumnName != "ARUS_MASUK_PENDANAAN" && y.ColumnName != "SELISIH").Sum(y => y.ColumnValue);
+            var ArusKasMasuk_Pendanaan_Selisih = Model.AssuranceResult.Where(y => y.RiskCode == "RR17" && y.ColumnName == "SELISIH").Sum(y => y.ColumnValue);
+            //var ArusKasMasuk_Pendanaan_LAK = ArusKasBersih_Pendanaan_LAK+ArusKasKeluar_Pendanaan_LAK;
+            //var ArusKasMasuk_Pendanaan_LedgerKas = Model.AssuranceResult.Where(y => y.RiskCode == "RR24" && y.ColumnName != "NET_PENDANAAN" && y.ColumnName != "SELISIH"&& y.ColumnName != "PEMBIAYAAN_DN"&& y.ColumnName != "PEMBIAYAAN_LN"&& y.ColumnName != "PENGELUARAN_PEMBIAYAAN_LAIN"&& y.ColumnName != "PENGELUARAN_POKOK_UTANG_LN"&& y.ColumnName != "RDI_RPD").Sum(y => y.ColumnValue);
+            //var ArusKasMasuk_Pendanaan_Selisih = ArusKasMasuk_Pendanaan_LAK - ArusKasMasuk_Pendanaan_LedgerKas;
+
+            @*Arus Kas Bersih Pendanaan*@
+            var ArusKasBersih_Pendanaan_LAK = ArusKasMasuk_Pendanaan_LAK - ArusKasKeluar_Pendanaan_LAK;
+            //var ArusKasBersih_Pendanaan_LAK = Model.AssuranceResult.Where(y => y.RiskCode == "RR24" && y.ColumnName == "NET_PENDANAAN").Sum(y => y.ColumnValue);
+
+            @*Arus Kas Transitoris*@
+            var ArusKasBersih_Transitoris_LAK = Model.AssuranceResult.Where(y => y.RiskCode == "RR18" && y.ColumnName == "NET_TRANSITORIS").Sum(y => y.ColumnValue);
+            var ArusKasBersih_Transitoris_LedgerKas = Model.AssuranceResult.Where(y => y.RiskCode == "RR18" && y.ColumnName != "NET_TRANSITORIS" && y.ColumnName != "SELISIH").Sum(y => y.ColumnValue);
+            var ArusKasBersih_Transitoris_Selisih = Model.AssuranceResult.Where(y => y.RiskCode == "RR18" && y.ColumnName == "SELISIH").Sum(y => y.ColumnValue);
+            var ArusKas_Transitoris_PFK = Model.AssuranceResult.Where(y => y.RiskCode == "RR18" && y.ColumnName == "PFK_NETTO").Sum(y => y.ColumnValue);
+            var ArusKas_Transitoris_Transito = Model.AssuranceResult.Where(y => y.RiskCode == "RR18" && y.ColumnName == "TRANSITO_NETTO").Sum(y => y.ColumnValue);
+            var ArusKas_Transitoris_KirimanUang = Model.AssuranceResult.Where(y => y.RiskCode == "RR18" && y.ColumnName == "KIRIMAN_UANG").Sum(y => y.ColumnValue);
+            var ArusKas_Transitoris_NonAnggaran = Model.AssuranceResult.Where(y => y.RiskCode == "RR18" && y.ColumnName == "NON_ANGGARAN").Sum(y => y.ColumnValue);
+            //var ArusKasBersih_Transitoris_LAK = ArusKas_Transitoris_PFK + ArusKas_Transitoris_Transito + ArusKas_Transitoris_KirimanUang + ArusKas_Transitoris_NonAnggaran;
+            //var ArusKasBersih_Transitoris_Selisih = ArusKasBersih_Transitoris_LAK - (ArusKas_Transitoris_PFK + ArusKas_Transitoris_Transito + ArusKas_Transitoris_KirimanUang + ArusKas_Transitoris_NonAnggaran);
+
+            @*Mutasi Kas Bersih*@
+            var ArusKasBersih_LAK = ArusKasBersih_Operasional_LAK + ArusKasBersih_Investasi_LAK + ArusKasBersih_Pendanaan_LAK + ArusKasBersih_Transitoris_LAK;
+            var ArusKasBersih_Selisih = ArusKasBersih_Transitoris_Selisih + ArusKasKeluar_Pendanaan_Selisih + ArusKasMasuk_Pendanaan_Selisih
+                + ArusKasKeluar_Investasi_Selisih + ArusKasMasuk_Investasi_Selisih + ArusKasKeluar_Operasional_Selisih + ArusKasMasuk_Operasional_Selisih;
+        }
+
+        <p align="justify">
+            Mutasi Kas selama T.A. @Model.ErekonReportYear dalam LAK AP  adalah sebesar Rp @String.Format("{0:n}", ArusKasBersih_LAK)  dengan rincian sebagai berikut:
+        </p>
+        <table border="1" , class="dataTable">
+            <thead>
+                <tr>
+                    <th><strong>Uraian</strong></th>
+                    <th><strong>Saldo (Rp)</strong></th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Arus Kas Bersih dari Aktivitas Operasi</td>
+                    <td align="right">@String.Format("{0:n}", ArusKasBersih_Operasional_LAK)</td>
+                </tr>
+                <tr>
+                    <td>Arus Kas Bersih dari Aktivitas Investasi</td>
+                    <td align="right">@String.Format("{0:n}", ArusKasBersih_Investasi_LAK)</td>
+                </tr>
+                <tr>
+                    <td>Arus Kas Bersih dari Aktivitas Pendanaan</td>
+                    <td align="right">@String.Format("{0:n}", ArusKasBersih_Pendanaan_LAK)</td>
+                </tr>
+                <tr>
+                    <td>Arus Kas Bersih dari Aktivitas Transitoris</td>
+                    <td align="right">@String.Format("{0:n}", ArusKasBersih_Transitoris_LAK)</td>
+                </tr>
+                <tr>
+                    <td><strong>Kenaikan (Penurunan) Kas Sebelum Koreksi Pembukuan</strong></td>
+                    <td align="right"><strong>@String.Format("{0:n}", ArusKasBersih_LAK)</strong></td>
+                </tr>
+            </tbody>
+        </table>
+        @if (ArusKasBersih_Selisih != 0)
+        {
+            <p align="justify">
+                Mutasi kas dimaksud terdapat selisih sebesar Rp @String.Format("{0:n}", ArusKasBersih_Selisih) dengan perhitungan arus kas masuk dan arus kas keluar sesuai Neraca Lajur sebagai berikut:
+            </p>
+        }
+        else
+        {
+            <p align="justify">
+                Mutasi kas dimaksud telah sesuai dengan perhitungan arus kas masuk dan arus kas keluar sesuai Neraca Lajur sebagai berikut:
+            </p>
+        }
+
+        <table border="1" , class="dataTable">
+            <thead>
+                <tr>
+                    <th><strong>Uraian</strong></th>
+                    <th><strong>Saldo (Rp)</strong></th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Kenaikan (Penurunan) Kas Sebelum Koreksi berdasarkan LAK (A)</strong></td>
+                    <td align="right">@String.Format("{0:n}", ArusKasBersih_LAK)</td>
+                </tr>
+                <tr>
+                    <td colspan="2"><strong>Perhitungan berdasarkan NL (CFM Itjen)</strong></td>
+                </tr>
+                <tr>
+                    <td><strong>Aktivitas Operasi</strong></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>Arus Kas Masuk</td>
+                    <td align="right">@String.Format("{0:n}", ArusKasMasuk_Operasional_LedgerKas)</td>
+                </tr>
+                <tr>
+                    <td>Arus Kas Keluar</td>
+                    <td align="right">@String.Format("{0:n}", ArusKasKeluar_Operasional_LedgerKas)</td>
+                </tr>
+                <tr>
+                    <td>Arus Kas Bersih dari Aktivitas Operasional</td>
+                    <td align="right">@String.Format("{0:n}", ArusKasMasuk_Operasional_LedgerKas - ArusKasKeluar_Operasional_LedgerKas)</td>
+                </tr>
+                <tr>
+                    <td><strong>Aktivitas Investasi</strong></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>Arus Kas Masuk</td>
+                    <td align="right">@String.Format("{0:n}", ArusKasMasuk_Investasi_LedgerKas)</td>
+                </tr>
+                <tr>
+                    <td>Arus Kas Keluar</td>
+                    <td align="right">@String.Format("{0:n}", ArusKasKeluar_Investasi_LedgerKas)</td>
+                </tr>
+                <tr>
+                    <td>Arus Kas Bersih dari Aktivitas Investasi</td>
+                    <td align="right">@String.Format("{0:n}", ArusKasMasuk_Investasi_LedgerKas - ArusKasKeluar_Investasi_LedgerKas)</td>
+                </tr>
+                <tr>
+                    <td><strong>Aktivitas Pendanaan</strong></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>Arus Kas Masuk</td>
+                    <td align="right">@String.Format("{0:n}", ArusKasMasuk_Pendanaan_LedgerKas)</td>
+                </tr>
+                <tr>
+                    <td>Arus Kas Keluar</td>
+                    <td align="right">@String.Format("{0:n}", ArusKasKeluar_Pendanaan_LedgerKas)</td>
+                </tr>
+                <tr>
+                    <td>Arus Kas Bersih dari Aktivitas Pendanaan</td>
+                    <td align="right">@String.Format("{0:n}", ArusKasMasuk_Pendanaan_LedgerKas - ArusKasKeluar_Pendanaan_LedgerKas)</td>
+                </tr>
+                <tr>
+                    <td><strong>Aktivitas Transitoris</strong></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>Non Anggaran PFK</td>
+                    <td align="right">@String.Format("{0:n}", ArusKas_Transitoris_PFK)</td>
+                </tr>
+                <tr>
+                    <td>Penerimaan dan Pengeluaran Transito</td>
+                    <td align="right">@String.Format("{0:n}", ArusKas_Transitoris_Transito)</td>
+                </tr>
+                <tr>
+                    <td>Non Anggaran Pihak Ketiga</td>
+                    <td align="right">@String.Format("{0:n}", ArusKas_Transitoris_NonAnggaran)</td>
+                </tr>
+                <tr>
+                    <td>Kiriman Uang Antar Rekening Bank</td>
+                    <td align="right">@String.Format("{0:n}", ArusKas_Transitoris_KirimanUang)</td>
+                </tr>
+                <tr>
+                    <td>Arus Kas Bersih Aktivitas Transitoris</td>
+                    <td align="right">@String.Format("{0:n}", ArusKas_Transitoris_PFK + ArusKas_Transitoris_Transito + ArusKas_Transitoris_NonAnggaran + ArusKas_Transitoris_KirimanUang)</td>
+                </tr>
+                <tr>
+                    <td><strong>Kenaikan (Penurunan) Kas CFM Itjen (B)</strong></td>
+                    <td align="right">@String.Format("{0:n}", ArusKasMasuk_Operasional_LedgerKas - ArusKasKeluar_Operasional_LedgerKas + ArusKasMasuk_Investasi_LedgerKas - ArusKasKeluar_Investasi_LedgerKas + ArusKasMasuk_Pendanaan_LedgerKas - ArusKasKeluar_Pendanaan_LedgerKas + ArusKas_Transitoris_PFK + ArusKas_Transitoris_Transito + ArusKas_Transitoris_NonAnggaran + ArusKas_Transitoris_KirimanUang)</td>
+                </tr>
+                <tr>
+                    <td><strong>Selisih (A)-(B)</strong></td>
+                    <td align="right">@String.Format("{0:n}", ArusKasBersih_Selisih)</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <li><strong>Koreksi dan Penyesuaian</strong></li>
+        @*Variable Declaration*@
+        @{
+            var LAK_Koreksi_SILPA = Model.AssuranceResult.Where(y => y.RiskCode == "RR25A" && y.ColumnName == "KOREKSI_SILPA_LAK").Sum(y => y.ColumnValue);
+            var TB_Koreksi_SILPA = Model.AssuranceResult.Where(y => y.RiskCode == "RR25A" && y.ColumnName == "KOREKSI_SILPA_TB").Sum(y => y.ColumnValue);
+            var Selisih_Koreksi_SILPA = Model.AssuranceResult.Where(y => y.RiskCode == "RR25A" && y.ColumnName == "SELISIH").Sum(y => y.ColumnValue);
+
+            var LAK_Penyesuaian_Selisih_Kurs = Model.AssuranceResult.Where(y => y.RiskCode == "RR25B" && y.ColumnName == "SELISIH_KURS_LAK").Sum(y => y.ColumnValue);
+            var TB_Penyesuaian_Selisih_Kurs = Model.AssuranceResult.Where(y => y.RiskCode == "RR25B" && y.ColumnName == "SELISIH_KURS_TB").Sum(y => y.ColumnValue);
+            var Selisih_Penyesuaian_Selisih_Kurs = Model.AssuranceResult.Where(y => y.RiskCode == "RR25B" && y.ColumnName == "SELISIH").Sum(y => y.ColumnValue);
+
+            //var LAK_Koreksi_Pembukuan = Model.AssuranceResult.Where(y => y.RiskCode == "RR25C" && y.ColumnName == "KOREKSI_PEMBUKUAN_LAK").Sum(y => y.ColumnValue);
+            var TB_Koreksi_Pembukuan = Model.AssuranceResult.Where(y => y.RiskCode == "RR25C" && y.ColumnName == "KOREKSI_PEMBUKUAN_TB").Sum(y => y.ColumnValue);
+            //var Selisih_Koreksi_Pembukuan = Model.AssuranceResult.Where(y => y.RiskCode == "RR25C" && y.ColumnName == "SELISIH").Sum(y => y.ColumnValue);
+            var LAK_Koreksi_Pembukuan = Model.AssuranceResult.Where(y => y.RiskCode == "RR25C" && y.ColumnName == "KOREKSI_PEMBUKUAN_TB").Sum(y => y.ColumnValue);
+            var Selisih_Koreksi_Pembukuan = LAK_Koreksi_Pembukuan - TB_Koreksi_Pembukuan;
+
+            var LAK_Penggunaan_SAL = Model.AssuranceResult.Where(y => y.RiskCode == "RR25D" && y.ColumnName == "PENGGUNAAN_SAL_LAK").Sum(y => y.ColumnValue);
+            var TB_Penggunaan_SAL = Model.AssuranceResult.Where(y => y.RiskCode == "RR25D" && y.ColumnName == "PENGGUNAAN_SAL_TB").Sum(y => y.ColumnValue);
+            var Selisih_Penggunaan_SAL = Model.AssuranceResult.Where(y => y.RiskCode == "RR25D" && y.ColumnName == "SELISIH").Sum(y => y.ColumnValue);
+
+            var LAK_Koreksi_Penyesuaian_Total = LAK_Koreksi_SILPA + LAK_Koreksi_Pembukuan + LAK_Penyesuaian_Selisih_Kurs + LAK_Penggunaan_SAL;
+            var TB_Koreksi_Penyesuaian_Total = TB_Koreksi_SILPA + TB_Koreksi_Pembukuan + TB_Penyesuaian_Selisih_Kurs + TB_Penggunaan_SAL;
+            var Selisih_Koreksi_Penyesuaian_Total = LAK_Koreksi_Penyesuaian_Total - TB_Koreksi_Penyesuaian_Total;
+        }
+        <p align="justify">
+            Koreksi yang dilakukan untuk mendapatkan Saldo Akhir Kas per @Model.SPANReportPeriod adalah senilai Rp @String.Format("{0:n}", LAK_Koreksi_Penyesuaian_Total) terdiri dari:
+        </p>
+        <ol type="a">
+            <li>Koreksi SILPA senilai Rp @String.Format("{0:n}", LAK_Koreksi_SILPA)</li>
+            <li>Penyesuaian atas Selisih Kurs senilai Rp @String.Format("{0:n}", LAK_Penyesuaian_Selisih_Kurs)</li>
+            <li>Akumulasi Koreksi Pembukuan senilai Rp @String.Format("{0:n}", LAK_Koreksi_Pembukuan)</li>
+            <li>Penggunaan SAL senilai Rp @String.Format("{0:n}", LAK_Penggunaan_SAL)</li>
+        </ol>
+
+        @if (Selisih_Koreksi_Penyesuaian_Total != 0)
+        {
+            <p align="justify">
+                Koreksi dan Penyesuaian tersebut masih memiliki selisih sebesar Rp @String.Format("{0:n}", Selisih_Koreksi_Penyesuaian_Total) dengan akun-akun pembentuknya pada ledger kas. Rincian atas selisih tersebut sebagai berikut:
+            </p>
+        }
+        else
+        {
+            <p align="justify">
+                Koreksi dan Penyesuaian tersebut telah sesuai dengan akun-akun pembentuknya pada ledger kas.
+            </p>
+        }
+        <table border="1" class="dataTable">
+            <thead>
+                <tr>
+                    <th><strong>Uraian</strong></th>
+                    <th><strong>Saldo LAK</strong></th>
+                    <th><strong>Saldo Ledger Kas</strong></th>
+                    <th><strong>Selisih</strong></th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>
+                        Koreksi SILPA
+                    </td>
+                    <td align="right">
+                        @String.Format("{0:n}", LAK_Koreksi_SILPA)
+                    </td>
+                    <td align="right">
+                        @String.Format("{0:n}", TB_Koreksi_SILPA)
+                    </td>
+                    <td align="right">
+                        @String.Format("{0:n}", Selisih_Koreksi_SILPA)
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        Penyesuaian atas Selisih Kurs
+                    </td>
+                    <td align="right">
+                        @String.Format("{0:n}", LAK_Penyesuaian_Selisih_Kurs)
+                    </td>
+                    <td align="right">
+                        @String.Format("{0:n}", TB_Penyesuaian_Selisih_Kurs)
+                    </td>
+                    <td align="right">
+                        @String.Format("{0:n}", Selisih_Penyesuaian_Selisih_Kurs)
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        Akumulasi Koreksi Pembukuan
+                    </td>
+                    <td align="right">
+                        @String.Format("{0:n}", LAK_Koreksi_Pembukuan)
+                    </td>
+                    <td align="right">
+                        @String.Format("{0:n}", TB_Koreksi_Pembukuan)
+                    </td>
+                    <td align="right">
+                        @String.Format("{0:n}", Selisih_Koreksi_Pembukuan)
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        Penggunaan SAL
+                    </td>
+                    <td align="right">
+                        @String.Format("{0:n}", LAK_Penggunaan_SAL)
+                    </td>
+                    <td align="right">
+                        @String.Format("{0:n}", TB_Penggunaan_SAL)
+                    </td>
+                    <td align="right">
+                        @String.Format("{0:n}", Selisih_Penggunaan_SAL)
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        Total
+                    </td>
+                    <td align="right">
+                        @String.Format("{0:n}", LAK_Koreksi_Penyesuaian_Total)
+                    </td>
+                    <td align="right">
+                        @String.Format("{0:n}", TB_Koreksi_Penyesuaian_Total)
+                    </td>
+                    <td align="right">
+                        @String.Format("{0:n}", Selisih_Koreksi_Penyesuaian_Total)
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <li><strong>Penyajian Saldo Akhir Kas</strong></li>
+        @*Variable Declaration*@
+        @{
+            var Sakhir_LAK_Kas_BLU = Model.AssuranceResult.Where(y => y.RiskCode == "RGL09" && y.ColumnName == "KAS_BLU").Sum(y => y.ColumnValue);
+            var Sakhir_LAK_Kas_KL = Model.AssuranceResult.Where(y => y.RiskCode == "RGL09" && y.ColumnName == "KAS_LEMBAGA").Sum(y => y.ColumnValue);
+            var Sakhir_LAK_Kas_KPPN = Model.AssuranceResult.Where(y => y.RiskCode == "RGL09" && y.ColumnName == "KAS_KPPN").Sum(y => y.ColumnValue);
+            var Sakhir_LAK_Kas_BUN = Model.AssuranceResult.Where(y => y.RiskCode == "RGL09" && y.ColumnName == "KAS_BUN").Sum(y => y.ColumnValue);
+            var Sakhir_LAK_Kas_RPL = Model.AssuranceResult.Where(y => y.RiskCode == "RGL09" && y.ColumnName == "KAS_RPL").Sum(y => y.ColumnValue);
+            var Sakhir_LAK_Kas_Transitoris = Model.AssuranceResult.Where(y => y.RiskCode == "RGL09" && y.ColumnName == "KAS_TRANSITORIS").Sum(y => y.ColumnValue);
+            var Sakhir_LAK_Aset_Lainnya = Model.AssuranceResult.Where(y => y.RiskCode == "RGL09" && y.ColumnName == "DANA_DIBATASI_PENGGUNAANNYA").Sum(y => y.ColumnValue);
+            var Sakhir_LAK_CFM = Sakhir_LAK_Kas_BLU + Sakhir_LAK_Kas_BUN + Sakhir_LAK_Kas_KL + Sakhir_LAK_Kas_KPPN + Sakhir_LAK_Kas_RPL + Sakhir_LAK_Kas_Transitoris + Sakhir_LAK_Aset_Lainnya;
+            var Sakhir_LAK_Total = Model.AssuranceResult.Where(y => y.RiskCode == "RGL09" && y.ColumnName == "SALDO_AKHIR_LAK").Sum(y => y.ColumnValue);
+        }
+        <p align="justify">
+            Berdasarkan hasil reviu Saldo Akhir Kas pada LAK per @Model.SPANReportPeriod adalah sebesar Rp @String.Format("{0:n}", Sakhir_LAK_Total). Rincian saldo akhir kas adalah sebagai berikut:
+        </p>
+        <table border="1" , class="dataTable">
+            <thead>
+                <tr>
+                    <th><strong>Uraian</strong></th>
+                    <th><strong>Saldo (Rp)</strong></th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Saldo Akhir Kas Menurut LAK Face (A)</strong></td>
+                    <td align="right"><strong>@String.Format("{0:n}", Sakhir_LAK_Total)</strong></td>
+                </tr>
+                <tr>
+                    <td colspan="2"><strong>Atribusi Saldo Akhir LAK berdasarkan NL (CFM Itjen)</strong></td>
+                </tr>
+                <tr>
+                    <td>Saldo Akhir Kas BLU</td>
+                    <td align="right">@String.Format("{0:n}", Sakhir_LAK_Kas_BLU)</td>
+                </tr>
+                <tr>
+                    <td>Saldo Akhir Kas di KL dari Hibah</td>
+                    <td align="right">@String.Format("{0:n}", Sakhir_LAK_Kas_KL)</td>
+                </tr>
+                <tr>
+                    <td>Saldo Akhir Kas KPPN</td>
+                    <td align="right">@String.Format("{0:n}", Sakhir_LAK_Kas_KPPN)</td>
+                </tr>
+                <tr>
+                    <td>Saldo Akhir Kas BUN</td>
+                    <td align="right">@String.Format("{0:n}", Sakhir_LAK_Kas_BUN)</td>
+                </tr>
+                <tr>
+                    <td>Saldo Akhir Kas Rekening Pemerintah Lainnya</td>
+                    <td align="right">@String.Format("{0:n}", Sakhir_LAK_Kas_RPL)</td>
+                </tr>
+                <tr>
+                    <td>Saldo Akhir Kas Transitoris</td>
+                    <td align="right">@String.Format("{0:n}", Sakhir_LAK_Kas_Transitoris)</td>
+                </tr>
+                <tr>
+                    <td>Saldo Akhir Aset Lainnya (Kas Rekening Escrow)</td>
+                    <td align="right">@String.Format("{0:n}", Sakhir_LAK_Aset_Lainnya)</td>
+                </tr>
+                <tr>
+                    <td><strong>Total Atribusi Saldo Akhir Kas LAK CFM Itjen (B)</strong></td>
+                    <td align="right"><strong>@String.Format("{0:n}", Sakhir_LAK_CFM)</strong></td>
+                </tr>
+                <tr>
+                    <td><strong>Selisih (A)-(B)</strong></td>
+                    <td align="right"><strong>@String.Format("{0:n}", Sakhir_LAK_Total - Sakhir_LAK_CFM)</strong></td>
+                </tr>
+            </tbody>
+        </table>
+    </ol>
+    <br />
+    <br />
+    <li><strong>Neraca</strong></li>
+    <ol type="1">
+        <li><strong>Saldo Awal Neraca</strong></li>
+        <li><strong>Saldo Akhir Neraca</strong></li>
+        <ol type="a">
+            <li><strong>Rekening Pemerintah di Bank Indonesia dan Bank Umum dalam Rupiah</strong></li>
+            @*Variable Declaration*@
+            @{
+                var Neraca_KasBI_Rupiah_Saldo = Model.AssuranceResult.Where(y => y.RiskCode == "RR2" && y.ColumnName == "SALDO_NERACA_AKRUAL").Sum(y => y.ColumnValue);
+                var Neraca_KasBI_Rupiah_1111_Akrual = Model.AssuranceResult.Where(y => y.RiskCode == "RR2" && y.ColumnName == "SALDO_1111_AKRUAL").Sum(y => y.ColumnValue);
+                var Neraca_KasBI_Rupiah_1111_Cash = Model.AssuranceResult.Where(y => y.RiskCode == "RR2" && y.ColumnName == "TOTAL_AKUN_1111_CASH").Sum(y => y.ColumnValue);
+                var Neraca_KasBI_Rupiah_SelisihAkrual = Neraca_KasBI_Rupiah_Saldo - Neraca_KasBI_Rupiah_1111_Akrual;
+                var Neraca_KasBI_Rupiah_SelisihKas = Neraca_KasBI_Rupiah_Saldo - Neraca_KasBI_Rupiah_1111_Cash;
+            }
+
+            @if (Neraca_KasBI_Rupiah_SelisihAkrual != 0 || Neraca_KasBI_Rupiah_SelisihKas != 0)
+            {
+                <p align="justify">
+                    Saldo akhir Rekening Pemerintah di Bank Indonesia dan Bank Umum dalam Rupiah per @Model.SPANReportPeriod yang disajikan dalam Neraca adalah sebesar Rp @String.Format("{0:n}", Neraca_KasBI_Rupiah_Saldo). Namun demikian, saldo tersebut belum sesuai dengan akun-akun pembentuknya pada Neraca lajur. Rincian perhitungan saldo akun tersebut adalah sebagai berikut:
+                </p>
+            }
+
+            else
+            {
+                <p align="justify">
+                    Saldo akhir Rekening Pemerintah di Bank Indonesia dan Bank Umum dalam Rupiah per @Model.SPANReportPeriod yang disajikan dalam Neraca adalah sebesar Rp @String.Format("{0:n}", Neraca_KasBI_Rupiah_Saldo) dan telah sesuai dengan Neraca lajur kas dan akrual. Rincian perhitungan saldo akun tersebut adalah sebagai berikut:
+                </p>
+            }
+
+            <table class="dataTable" border="1">
+                <thead>
+                    <tr>
+                        <th>Uraian</th>
+                        <th>Saldo LK (Rp)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            <strong>A. Saldo Rekening Pemerintah di Bank Indonesia dan bank Umum dalam Rupiah (Neraca)</strong>
+                        </td>
+                        <td align="right">
+                            @String.Format("{0:n}", Neraca_KasBI_Rupiah_Saldo)
+                        </td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td><strong>B. Neraca Lajur Ledger Kas</strong></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Jumlah Akun 1111 pada Legder Kas
+                        </td>
+                        <td align="right">
+                            @String.Format("{0:n}", Neraca_KasBI_Rupiah_1111_Cash)
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>A-B</strong></td>
+                        <td align="right"><strong>@String.Format("{0:n}", Neraca_KasBI_Rupiah_SelisihKas)</strong></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td><strong>C. Neraca Lajur Ledger Akrual</strong></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Jumlah Akun 1111 pada Legder Akrual
+                        </td>
+                        <td align="right">
+                            @String.Format("{0:n}", Neraca_KasBI_Rupiah_1111_Akrual)
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>A-C</strong></td>
+                        <td align="right"><strong>@String.Format("{0:n}", Neraca_KasBI_Rupiah_SelisihAkrual)</strong></td>
+                    </tr>
+                </tbody>
+            </table>
+            <br />
+            <li><strong>Rekening Pemerintah di Bank Indonesia dalam Valuta Asing</strong></li>
+            @*Variable Declaration*@
+            @{
+                var Neraca_KasBI_Valas_Saldo = Model.AssuranceResult.Where(y => y.RiskCode == "RR3" && y.ColumnName == "SALDO_NERACA_AKRUAL").Sum(y => y.ColumnValue);
+                var Neraca_KasBI_Valas_1112_Akrual = Model.AssuranceResult.Where(y => y.RiskCode == "RR3" && y.ColumnName == "SALDO_1112_AKRUAL").Sum(y => y.ColumnValue);
+                var Neraca_KasBI_Valas_1112_Cash = Model.AssuranceResult.Where(y => y.RiskCode == "RR3" && y.ColumnName == "TOTAL_AKUN_1112_CASH").Sum(y => y.ColumnValue);
+                var Neraca_KasBI_Valas_SelisihAkrual = Neraca_KasBI_Valas_Saldo - Neraca_KasBI_Valas_1112_Akrual;
+                var Neraca_KasBI_Valas_SelisihKas = Neraca_KasBI_Valas_Saldo - Neraca_KasBI_Valas_1112_Cash;
+            }
+
+            @if (Neraca_KasBI_Valas_SelisihAkrual != 0 || Neraca_KasBI_Valas_SelisihKas != 0)
+            {
+                <p align="justify">
+                    Saldo akhir Rekening Pemerintah di Bank Indonesia dalam Valuta Asing per @Model.SPANReportPeriod yang disajikan dalam Neraca adalah sebesar Rp @String.Format("{0:n}", Neraca_KasBI_Valas_Saldo). Namun demikian, saldo tersebut belum sesuai dengan akun-akun pembentuknya pada Neraca lajur. Rincian perhitungan saldo akun tersebut adalah sebagai berikut:
+                </p>
+            }
+
+            else
+            {
+                <p align="justify">
+                    Saldo akhir Rekening Pemerintah di Bank Indonesia dalam Valuta Asing per @Model.SPANReportPeriod yang disajikan dalam Neraca adalah sebesar Rp @String.Format("{0:n}", Neraca_KasBI_Valas_Saldo) dan telah sesuai dengan Neraca lajur kas dan akrual. Rincian perhitungan saldo akun tersebut adalah sebagai berikut:
+                </p>
+            }
+
+            <table class="dataTable" border="1">
+                <thead>
+                    <tr>
+                        <th>Uraian</th>
+                        <th>Saldo LK (Rp)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            <strong>A. Saldo Rekening Pemerintah di Bank Indonesia dalam Valuta Asing (Neraca)</strong>
+                        </td>
+                        <td align="right">
+                            @String.Format("{0:n}", Neraca_KasBI_Valas_Saldo)
+                        </td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td><strong>B. Neraca Lajur Ledger Kas</strong></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Jumlah Akun 1112 pada Legder Kas
+                        </td>
+                        <td align="right">
+                            @String.Format("{0:n}", Neraca_KasBI_Valas_1112_Cash)
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>A-B</strong></td>
+                        <td align="right"><strong>@String.Format("{0:n}", Neraca_KasBI_Valas_SelisihKas)</strong></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td><strong>C. Neraca Lajur Ledger Akrual</strong></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Jumlah Akun 1112 pada Legder Akrual
+                        </td>
+                        <td align="right">
+                            @String.Format("{0:n}", Neraca_KasBI_Valas_1112_Akrual)
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>A-C</strong></td>
+                        <td align="right"><strong>@String.Format("{0:n}", Neraca_KasBI_Valas_SelisihAkrual)</strong></td>
+                    </tr>
+                </tbody>
+            </table>
+            <br />
+            <li><strong>Rekening Pemerintah Lainnya</strong></li>
+            @*Variable Declaration*@
+            @{
+                var Neraca_KasRPL_Saldo = Model.AssuranceResult.Where(y => y.RiskCode == "RR4" && y.ColumnName == "KAS_RPL_AKRUAL").Sum(y => y.ColumnValue);
+                var Neraca_KasRPL_1113_Akrual = Model.AssuranceResult.Where(y => y.RiskCode == "RR4" && y.ColumnName == "TOTAL_AKUN_1113_AKRUAL").Sum(y => y.ColumnValue);
+                var Neraca_KasRPL_1113_Cash = Model.AssuranceResult.Where(y => y.RiskCode == "RR4" && y.ColumnName == "TOTAL_AKUN_1113_CASH").Sum(y => y.ColumnValue);
+                var Neraca_KasRPL_SelisihAkrual = Neraca_KasRPL_Saldo - Neraca_KasRPL_1113_Akrual;
+                var Neraca_KasRPL_SelisihKas = Neraca_KasRPL_Saldo - Neraca_KasRPL_1113_Cash;
+            }
+
+            @if (Neraca_KasRPL_SelisihAkrual != 0 || Neraca_KasRPL_SelisihKas != 0)
+            {
+                <p align="justify">
+                    Saldo akhir Rekening Pemerintah Lainnya per @Model.SPANReportPeriod yang disajikan dalam Neraca adalah sebesar Rp @String.Format("{0:n}", Neraca_KasRPL_Saldo). Namun demikian, saldo tersebut belum sesuai dengan akun-akun pembentuknya pada Neraca lajur. Rincian perhitungan saldo akun tersebut adalah sebagai berikut:
+                </p>
+            }
+
+            else
+            {
+                <p align="justify">
+                    Saldo akhir Rekening Pemerintah Lainnya per @Model.SPANReportPeriod yang disajikan dalam Neraca adalah sebesar Rp @String.Format("{0:n}", Neraca_KasRPL_Saldo) dan telah sesuai dengan Neraca lajur kas dan akrual. Rincian perhitungan saldo akun tersebut adalah sebagai berikut:
+                </p>
+            }
+
+            <table class="dataTable" border="1">
+                <thead>
+                    <tr>
+                        <th>Uraian</th>
+                        <th>Saldo LK (Rp)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            <strong>A. Saldo Rekening Pemerintah Lainnya (Neraca)</strong>
+                        </td>
+                        <td align="right">
+                            @String.Format("{0:n}", Neraca_KasRPL_Saldo)
+                        </td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td><strong>B. Neraca Lajur Ledger Kas</strong></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Jumlah Akun 1113 pada Legder Kas
+                        </td>
+                        <td align="right">
+                            @String.Format("{0:n}", Neraca_KasRPL_1113_Cash)
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>A-B</strong></td>
+                        <td align="right"><strong>@String.Format("{0:n}", Neraca_KasRPL_SelisihKas)</strong></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td><strong>C. Neraca Lajur Ledger Akrual</strong></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Jumlah Akun 1113 pada Legder Akrual
+                        </td>
+                        <td align="right">
+                            @String.Format("{0:n}", Neraca_KasRPL_1113_Akrual)
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>A-C</strong></td>
+                        <td align="right"><strong>@String.Format("{0:n}", Neraca_KasRPL_SelisihAkrual)</strong></td>
+                    </tr>
+                </tbody>
+            </table>
+            <br />
+            <li><strong>Kas di Rekening KPPN</strong></li>
+            @*Pertama kita bandingkan antara Kas di Rekening KPPN menurut neraca dan akun pembentuknya*@
+            <p align="justify">
+                Berdasarkan data SPAN pada SLDK, saldo Rekening Kas di KPPN per @Model.SPANReportPeriod yaitu sebesar Rp @String.Format("{0:n}", Saldo_RekeningKPPN_Neraca).
+                Kas di Rekening KPPN dimaksud berasal dari @RekeningKPPN_Satker.Count() KPPN dengan rincian sebagai berikut:
+            </p>
+
+            <table class="dataTable" border="1">
+                <thead>
+                    <tr>
+                        <th>Kode KPPN</th>
+                        <th>KPPN</th>
+                        <th>Saldo Akhir</th>
+                    </tr>
+                </thead>
+                <tbody>
+
+                    @foreach (var data in RekeningKPPN_Satker)
+                    {
+                        <tr>
+                            <td>@data.Key.Identifier2</td>
+                            <td>@{Html.RenderAction("PickUnit", new { id = data.Key.Identifier2, org = "KPPN" });}</td>
+                            @foreach (var item in data.OrderBy(y => y.ColumnName))
+                            {
+                                <td align="right">@String.Format("{0:n}", item.ColumnValue)</td>
+                            }
+
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+            @if (groupedData_RekeningKPPN_Neraca_Ledger_Selisih.Count() == 0)
+            {
+                <p align="justify">
+                    Berdasarkan data SPAN pada SLDK, saldo Rekening Kas di KPPN tersebut telah sesuai antara Neraca
+                    dengan akun-akun pembentuknya pada ledger kas.
+                </p>
+            }
+            else
+            {
+                <p align="justify">
+                    Namun demikian, berdasarkan data SPAN pada SLDK, terdapat perbedaan saldo Kas di Rekening KPPN per @Model.SPANReportPeriod menurut Neraca dan rincian akun pembentuknya pada ledger kas.
+                    Saldo menurut ledger kas adalah Rp @String.Format("{0:n}", Saldo_RekeningKPPN_LedgerKas) sehingga terdapat selisih saldo kas di rekening KPPN sebesar Rp @String.Format("{0:n}", Saldo_RekeningKPPN_NeracaLedger_Selisih).
+                    Selisih tersebut berasal dari @groupedData_RekeningKPPN_Neraca_Ledger_Selisih.Count() KPPN dengan rincian sebagai berikut:
+                </p>
+
+                <table class="dataTable" border="1">
+                    <thead>
+                        <tr>
+                            <th>Kode KPPN</th>
+                            <th>KPPN</th>
+                            <th>Neraca KPPN</th>
+                            <th>Ledger Kas</th>
+                            <th>Selisih</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+
+                        @foreach (var data in groupedData_RekeningKPPN_Neraca_Ledger_Selisih)
+                        {
+                            <tr>
+                                <td>@data.Key.Identifier2</td>
+                                <td>@{Html.RenderAction("PickUnit", new { id = data.Key.Identifier2, org = "KPPN" });}</td>
+                                @foreach (var item in data.OrderBy(y => y.ColumnName))
+                                {
+                                    <td align="right">@String.Format("{0:n}", item.ColumnValue)</td>
+                                }
+
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+
+            @if (Saldo_RekeningKPPN_AkrualKas_Selisih != 0)
+            {
+                <p align="justify">
+                    Selain itu, diketahui bahwa terdapat selisih Saldo Kas di KPPN menurut ledger kas dan ledger akrual.
+                    Saldo Kas di KPPN menurut Ledger Akrual adalah Rp @String.Format("{0:n}", Saldo_RekeningKPPN_LedgerAkrual), sementara menurut ledger kas adalah Rp @String.Format("{0:n}", Saldo_RekeningKPPN_LedgerKas).
+                    Terdapat selisih sebesar Rp @String.Format("{0:n}", Saldo_RekeningKPPN_AkrualKas_Selisih). Berikut ini adalah rincian dari selisih tersebut:
+                </p>
+                <table border="1" class="dataTable">
+                    <thead>
+                        <tr>
+                            <th>
+                                KPPN
+                            </th>
+                            <th>
+                                Ledger Akrual
+                            </th>
+                            <th>
+                                Ledger Kas
+                            </th>
+                            <th>
+                                Selisih
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @{var groupedData = Model.AssuranceResult.Where(y => y.RiskCode == "RGL28").GroupBy(x => new { Identifier2 = x.Identifier2 });
+                        }
+
+                        @foreach (var data in groupedData.Where(y => y.Where(x => x.OutputColumnList.isAnomalyIdentifier && x.ColumnValue != 0).Count() != 0))
+                        {
+                            <tr>
+
+                                <td>@{Html.RenderAction("PickUnit", new { id = data.Key.Identifier2, org = "KPPN" });}</td>
+                                @foreach (var item in data.OrderBy(y => y.ColumnName))
+                                {
+                                    <td align="right">@String.Format("{0:n}", item.ColumnValue)</td>
+                                }
+
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+            <br />
+            @if (Model.Responses.Where(y => y.UniverseDetails.AreaName == "KPPN").Count() != 0)
+            {
+                foreach (var resp in Model.Responses.Where(y => y.UniverseDetails.AreaName == "KPPN"))
+                {
+                    @Html.Raw(resp.Content)
+                }
+
+            }
+            <br />
+            <li><strong>Kas dalam Transito</strong></li>
+            @*Jika Akrual Selisih*@
+            @if (Selisih_KDT_Akrual != 0)
+            {
+                @*Jika Akrual Selisih dan Kas juga selisih*@
+                if (Selisih_KDT_Cash != 0)
+                {
+                    <p align="justify">
+                        Saldo Kas Dalam Transito disajikan dalam Neraca per @Model.SPANReportPeriod sebesar
+                        Rp @String.Format("{0:n}", Saldo_KasDalamTransito_Neraca). Jumlah tersebut tidak sesuai dengan jumlah berdasarkan
+                        Ledger Akrual yakni sejumlah Rp @String.Format("{0:n}", Saldo_1115_Akrual), sehingga terdapat selisih sebesar Rp @String.Format("{0:n}", Selisih_KDT_Akrual).
+                        Selain itu, jika dibandingkan dengan jumlah berdasarkan Ledger Kas yakni sebesar Rp @String.Format("{0:n}", Saldo_1115_Cash + Saldo_818111_Cash + Saldo_828111_Cash) terdapat selisih sebesar
+                        Rp @String.Format("{0:n}", Selisih_KDT_Cash). Berikut ini adalah rincian dari selisih tersebut:
+                    </p>
+                }
+                @*Jika Akrual Selisih tapi Kas tidak selisih*@
+                else
+                {
+                    <p align="justify">
+                        Saldo Kas Dalam Transito disajikan dalam Neraca per @Model.SPANReportPeriod sebesar
+                        Rp @String.Format("{0:n}", Saldo_KasDalamTransito_Neraca). Jumlah tersebut tidak sesuai dengan jumlah berdasarkan
+                        Ledger Akrual yakni sejumlah Rp @String.Format("{0:n}", Saldo_1115_Akrual), sehingga terdapat selisih sebesar Rp @String.Format("{0:n}", Selisih_KDT_Akrual).
+                        Namun, jumlah tersebut telah sesuai jika dibandingkan dengan jumlah berdasarkan Ledger Kas yakni sebesar Rp @String.Format("{0:n}", Saldo_1115_Cash + Saldo_818111_Cash + Saldo_828111_Cash).
+                        Selisih dengan ledger akrual tersebut dapat diuraikan sebagai berikut:
+                    </p>
+                }
+            }
+            @*Jika Akrual Tidak Selisih*@
+            else
+            {
+                @*Jika Akrual Tidak Selisih tapi Kas selisih*@
+                if (Selisih_KDT_Cash != 0)
+                {
+                    <p align="justify">
+                        Saldo Kas Dalam Transito disajikan dalam Neraca per @Model.SPANReportPeriod sebesar
+                        Rp @String.Format("{0:n}", Saldo_KasDalamTransito_Neraca). Jumlah tersebut telah sesuai dengan jumlah berdasarkan
+                        Ledger Akrual. Namun, jika dibandingkan dengan jumlah berdasarkan Ledger Kas yakni sebesar Rp @String.Format("{0:n}", Saldo_1115_Cash + Saldo_818111_Cash + Saldo_828111_Cash) terdapat selisih sebesar
+                        Rp @String.Format("{0:n}", Selisih_KDT_Cash). Berikut ini adalah rincian dari selisih tersebut:
+                    </p>
+                }
+                @*Jika Akrual dan kas tidak Selisih*@
+                else
+                {
+                    <p align="justify">
+                        Saldo Kas Dalam Transito disajikan dalam Neraca per @Model.SPANReportPeriod sebesar
+                        Rp @String.Format("{0:n}", Saldo_KasDalamTransito_Neraca). Jumlah tersebut telah sesuai dengan jumlah berdasarkan
+                        Ledger Akrual. Jumlah tersebut juga telah sesuai jika dibandingkan dengan jumlah berdasarkan Ledger Kas
+                        yakni sebesar Rp @String.Format("{0:n}", Saldo_1115_Cash + Saldo_818111_Cash + Saldo_828111_Cash).
+                    </p>
+                }
+            }
+            <br />
+            <table class="dataTable" border="1">
+                <thead>
+                    <tr>
+                        <th>Uraian</th>
+                        <th>Saldo LK (Rp)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            <strong>A. Saldo Kas Dalam Transito (Neraca)</strong>
+                        </td>
+                        <td align="right">
+                            @String.Format("{0:n}", Saldo_KasDalamTransito_Neraca)
+                        </td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td><strong>B. Neraca Lajur Ledger Kas</strong></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Jumlah Akun 1115 pada Legder Kas
+                        </td>
+                        <td align="right">
+                            @String.Format("{0:n}", Saldo_1115_Cash)
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Penerimaan Kiriman Uang antar Rekening Bank (818111)</td>
+                        <td align="right">@String.Format("{0:n}", Saldo_818111_Cash)</td>
+                    </tr>
+                    <tr>
+                        <td>Pengeluaran Kiriman Uang antar Rekening Bank (828111)</td>
+                        <td align="right">@String.Format("{0:n}", Saldo_828111_Cash)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Jumlah Rincian Akun pada Ledger Kas</strong></td>
+                        <td align="right">@String.Format("{0:n}", Saldo_1115_Cash + Saldo_818111_Cash + Saldo_828111_Cash)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>A-B</strong></td>
+                        <td align="right"><strong>@String.Format("{0:n}", Selisih_KDT_Cash)</strong></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td><strong>C. Neraca Lajur Ledger Akrual</strong></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Jumlah Akun 1115 pada Legder Akrual
+                        </td>
+                        <td align="right">
+                            @String.Format("{0:n}", Saldo_1115_Akrual)
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>A-C</strong></td>
+                        <td align="right"><strong>@String.Format("{0:n}", Selisih_KDT_Akrual)</strong></td>
+                    </tr>
+                </tbody>
+            </table>
+            <br />
+            <li>
+                <strong>Kas di Bendahara Pengeluaran</strong>
+            </li>
+
+            @*Variable Declaration*@
+            @{
+                var Neraca_KasBP_Saldo = Model.AssuranceResult.Where(y => y.RiskCode == "RR7" && y.ColumnName == "SALDO_NERACA_AKRUAL").Sum(y => y.ColumnValue);
+                var Neraca_KasBP_1116_Akrual = Model.AssuranceResult.Where(y => y.RiskCode == "RR7" && y.ColumnName == "SALDO_1116_AKRUAL").Sum(y => y.ColumnValue);
+                var Neraca_KasBP_1116_Cash = Model.AssuranceResult.Where(y => y.RiskCode == "RR7" && y.ColumnName == "TOTAL_AKUN_1116_CASH").Sum(y => y.ColumnValue);
+                var Neraca_KasBP_8_Cash = Model.AssuranceResult.Where(y => y.RiskCode == "RR7" && y.ColumnName == "TOTAL_AKUN_8").Sum(y => y.ColumnValue);
+                var Neraca_KasBP_SelisihAkrual = Neraca_KasBP_Saldo - Neraca_KasBP_1116_Akrual;
+                var Neraca_KasBP_SelisihKas = Neraca_KasBP_Saldo - (Neraca_KasBP_8_Cash + Neraca_KasBP_1116_Cash);
+            }
+
+            @if (Neraca_KasBP_SelisihAkrual != 0 || Neraca_KasBP_SelisihKas != 0)
+            {
+                <p align="justify">
+                    Saldo akhir Kas di Bendahara Pengeluaran per @Model.SPANReportPeriod yang disajikan dalam Neraca adalah sebesar Rp @String.Format("{0:n}", Neraca_KasBP_Saldo). Kas BP dimaksud berasal dari @SatkerBP Satker pada @KPPNSatkerBP KPPN. Namun demikian, saldo tersebut belum sesuai dengan akun-akun pembentuknya pada Neraca lajur. Rincian perhitungan saldo kas BP adalah sebagai berikut:
+                </p>
+            }
+
+            else
+            {
+                <p align="justify">
+                    Saldo akhir Kas di Bendahara Pengeluaran per @Model.SPANReportPeriod yang disajikan dalam Neraca adalah sebesar Rp @String.Format("{0:n}", Neraca_KasBP_Saldo). Kas BP dimaksud berasal dari @SatkerBP Satker pada @KPPNSatkerBP KPPN dan telah sesuai dengan Neraca lajur kas dan akrual. Rincian perhitungan saldo kas BP adalah sebagai berikut:
+                </p>
+            }
+
+            <table class="dataTable" border="1">
+                <thead>
+                    <tr>
+                        <th>Uraian</th>
+                        <th>Saldo LK (Rp)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            <strong>A. Saldo Kas di Bendahara Pengeluaran (Neraca)</strong>
+                        </td>
+                        <td align="right">
+                            @String.Format("{0:n}", Neraca_KasBP_Saldo)
+                        </td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td><strong>B. Neraca Lajur Ledger Kas</strong></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Jumlah Akun 1116 pada Legder Kas
+                        </td>
+                        <td align="right">
+                            @String.Format("{0:n}", Neraca_KasBP_1116_Cash)
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Jumlah Mutasi Akun 81-82</td>
+                        <td align="right">@String.Format("{0:n}", Neraca_KasBP_8_Cash)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Jumlah Rincian Akun pada Ledger Kas</strong></td>
+                        <td align="right">@String.Format("{0:n}", Neraca_KasBP_8_Cash + Neraca_KasBP_1116_Cash)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>A-B</strong></td>
+                        <td align="right"><strong>@String.Format("{0:n}", Neraca_KasBP_SelisihKas)</strong></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td><strong>C. Neraca Lajur Ledger Akrual</strong></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Jumlah Akun 1116 pada Legder Akrual
+                        </td>
+                        <td align="right">
+                            @String.Format("{0:n}", Neraca_KasBP_1116_Akrual)
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>A-C</strong></td>
+                        <td align="right"><strong>@String.Format("{0:n}", Neraca_KasBP_SelisihAkrual)</strong></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            @*Cek apakah ada saldo BP minus*@
+            @if (SaldoBP_SPAN_Minus.Count() != 0)
+            {
+                <p>
+                    Berdasarkan penelitian lebih lanjut, terdapat @SaldoBP_SPAN_Minus.Count() satker yang memiliki saldo Kas di Bendahara
+                    Pengeluaran yang bernilai minus yaitu pada Satker berikut ini:
+                </p>
+                <table border="1" class="dataTable">
+                    <thead>
+                        <tr>
+                            <th>
+                                KPPN
+                            </th>
+                            <th>
+                                Satker
+                            </th>
+                            <th>Saldo Kas BP</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var stk in SaldoBP_SPAN_Minus)
+                        {
+                            <tr>
+                                <td>
+                                    @{Html.RenderAction("PickUnit", new { id = stk.Key.Identifier2, org = "KPPN" });}
+                                </td>
+                                <td>
+                                    @{Html.RenderAction("PickUnit", new { id = stk.Key.Identifier4, org = "Satker" });}
+                                </td>
+                                <td>
+                                    @String.Format("{0:n}", stk.OrderBy(y => y.ColumnName).First().ColumnValue)
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+
+            }
+
+            @*Selanjutnya, kita membandingkan data SPAN dan Erekon menggunakan hasil dari RGL01*@
+            @if (SaldoBP_Selisih_ERekon_SAI_SPAN == 0 && SaldoBP_Selisih_ERekon_SIAP_SPAN == 0)
+            {
+                <p align="justify">
+                    Saldo kas BP menurut SPAN tersebut telah sesuai dengan saldo menurut E-Rekon-LK (SIAP dan SAI) yakni sebesar @String.Format("{0:n}", SaldoBPAkrual)
+                </p>
+            }
+            else
+            {
+                <p align="justify">
+                    Berdasarkan perbandingan data SPAN pada SLDK dengan data e-rekon-LK terdapat perbedaan nilai Kas
+                    BP. Yakni sebesar Rp @String.Format("{0:n}", SaldoBP_Selisih_ERekon_SAI_SPAN) antara data SPAN di SLDK dengan SAI pada aplikasi e-Rekon-LK dan
+                    Rp @String.Format("{0:n}", SaldoBP_Selisih_ERekon_SIAP_SPAN) antara data SPAN di SLDK dengan SIAP pada aplikasi e-Rekon-LK dengan rincian sebagai berikut:
+                </p>
+
+                <table class="dataTable" border="1">
+                    <thead>
+                        <tr>
+                            <th>Periode</th>
+                            <th>Laporan</th>
+                            <th>SPAN-SLDK (Rp)</th>
+                            <th>Data</th>
+                            <th>E-Rekon-LK (Rp)</th>
+                            <th>Selisih (Rp)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td rowspan="2">@Model.SPANReportPeriod</td>
+                            <td>LAK Face</td>
+                            <td rowspan="2" style="vertical-align:middle!important;">@String.Format("{0:n}", SaldoBPAkrual)</td>
+                            <td>SIAP</td>
+                            <td>@String.Format("{0:n}", SaldoBP_ERekon_SIAP)</td>
+                            <td>@String.Format("{0:n}", SaldoBP_Selisih_ERekon_SIAP_SPAN)</td>
+                        </tr>
+                        <tr>
+                            <td>Neraca Kas</td>
+                            <td>SAI</td>
+                            <td>@String.Format("{0:n}", SaldoBP_ERekon_SAI)</td>
+                            <td>@String.Format("{0:n}", SaldoBP_Selisih_ERekon_SAI_SPAN)</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <p>
+                    Selisih dimaksud disebabkan oleh adanya selisih rekonsiliasi pada @groupedData_ERekon_SPAN_Satker_Selisih_BP.Count() Satker yaitu:
+                </p>
+
+                <table border="1" class="dataTable">
+                    <thead>
+                        <tr>
+                            <th>
+                                Kode Satker
+                            </th>
+                            <th>
+                                Nama Satker
+                            </th>
+                            <th>
+                                Kode KPPN
+                            </th>
+                            <th>
+                                Nama KPPN
+                            </th>
+                            <th>
+                                SPAN - SLDK (Rp)
+                            </th>
+                            <th>
+                                SAI e-Rekon (Rp)
+                            </th>
+                            <th>
+                                Selisih SPAN - SAI e-Rekon (Rp)
+                            </th>
+                            <th>
+                                SIAP e-Rekon (Rp)
+                            </th>
+                            <th>
+                                Selisih SPAN - SIAP e-Rekon (Rp)
+                            </th>
+                            <th>
+                                Selisih SIAP-SAI e-Rekon (Rp)
+                            </th>
+                            <th>Catatan</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var satker in groupedData_ERekon_SPAN_Satker_Selisih_BP)
+                        {
+                            <tr>
+                                <td>
+                                    @satker.Key.Identifier4
+                                </td>
+                                <td>@{Html.RenderAction("PickUnit", new { id = satker.Key.Identifier4, org = "Satker" });}</td>
+                                <td>
+                                    @satker.Key.Identifier2
+                                </td>
+                                <td>@{Html.RenderAction("PickUnit", new { id = satker.Key.Identifier2, org = "KPPN" });}</td>
+                                <td>
+                                    @String.Format("{0:n}", satker.OrderBy(y => y.ColumnName).First().ColumnValue)
+                                </td>
+                                <td>
+                                    @String.Format("{0:n}", satker.OrderBy(y => y.ColumnName).Skip(1).First().ColumnValue)
+                                </td>
+                                <td>@String.Format("{0:n}", satker.OrderBy(y => y.ColumnName).First().ColumnValue - satker.OrderBy(y => y.ColumnName).Skip(1).First().ColumnValue)</td>
+                                <td>
+                                    @String.Format("{0:n}", satker.OrderBy(y => y.ColumnName).Last().ColumnValue)
+                                </td>
+                                <td>@String.Format("{0:n}", satker.OrderBy(y => y.ColumnName).First().ColumnValue - satker.OrderBy(y => y.ColumnName).Last().ColumnValue)</td>
+                                <td>
+                                    @String.Format("{0:n}", satker.OrderBy(y => y.ColumnName).Skip(2).First().ColumnValue)
+                                </td>
+                                <td>
+                                    @if (satker.Key.Identifier1 != "KONFIRMASI")
+                                    {
+                                        <span>Double posting</span>
+                                    }
+                                    else
+                                    {
+                                        <span>Selisih</span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+
+                    </tbody>
+                </table>
+            }
+            <br />
+            @if (Model.Responses.Where(y => y.UniverseDetails.AreaName == "BP").Count() != 0)
+            {
+                foreach (var resp in Model.Responses.Where(y => y.UniverseDetails.AreaName == "BP"))
+                {
+                    @Html.Raw(resp.Content)
+                }
+
+            }
+            <br />
+            <li><strong>Kas Lainnya dan Setara Kas</strong></li>
+
+            <br />
+            <li>
+                <strong>Kas Lainnya pada Kementerian Negara/Lembaga</strong>
+            </li>
+
+            @*Pertama, kita membandingkan dulu antara Neraca KPPN/Neraca Kas dengan LAK Face menggunakan hasil dari RGL03*@
+            @if (SaldoHibah_NeracaKPPN_LAKFace_Selisih == 0)
+            {
+
+                <p align="justify">
+                    Saldo Kas di Kementerian/Lembaga (Hibah) per @Model.SPANReportPeriod berdasarkan data SPAN pada SLDK,
+                    menunjukkan tidak adanya perbedaan antara saldo menurut LAK Face dan Neraca KPPN, yaitu sebesar Rp @String.Format("{0:n}", SaldoHibah_NeracaKPPN).
+                    Kas Hibah dimaksud berasal dari @SatkerHibah Satker pada @KPPNSatkerHibah KPPN.
+                </p>
+
+            }
+            else
+            {
+                <p align="justify">
+                    Saldo Kas di Kementerian/Lembaga (Hibah) menurut Neraca KPPN adalah Rp @String.Format("{0:n}", SaldoHibah_NeracaKPPN). Kas Hibah dimaksud berasal dari @SatkerHibah Satker pada @KPPNSatkerHibah KPPN.
+                    Namun demikian, berdasarkan data SPAN pada SLDK, terdapat perbedaan saldo Kas di Kementerian/Lembaga per @Model.SPANReportPeriod menurut Neraca KPPN dan LAK Face.
+                    Saldo menurut LAK Face adalah Rp @String.Format("{0:n}", SaldoHibah_LAKFace) sehingga terdapat selisih saldo kas di Kementerian/Lembaga sebesar Rp @String.Format("{0:n}", SaldoHibah_NeracaKPPN_LAKFace_Selisih).
+                    Selisih tersebut berasal dari @SatkerHibah_NeracaKPPN_LAKFace_Selisih Satker pada @KPPNSatkerHibah_NeracaKPPN_LAKFace_Selisih KPPN dengan rincian sebagai berikut:
+                </p>
+                <table class="dataTable" border="1">
+                    <thead>
+                        <tr>
+                            <th>Kode Satker</th>
+                            <th>Nama Satker</th>
+                            <th>Kode KPPN</th>
+                            <th>KPPN</th>
+                            <th>Neraca KPPN</th>
+                            <th>LAK Face</th>
+                            <th>Selisih</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @{var groupedData = Model.AssuranceResult.Where(y => y.RiskCode == "RGL03" && (y.ColumnName == "SALDO_KAS_KEMENTERIAN" || y.ColumnName == "SALDO_KAS_LAK" || y.ColumnName == "SELISIH_SALDO_KAS_LAK_KEMENTERIAN")).GroupBy(x => new { Identifier5 = x.Identifier5, Identifier2 = x.Identifier2 });
+                        }
+
+                        @foreach (var data in groupedData.Where(y => y.Where(x => x.OutputColumnList.isAnomalyIdentifier && x.ColumnValue != 0).Count() != 0))
+                        {
+                            <tr>
+                                <td>@data.Key.Identifier5</td>
+                                <td>@{Html.RenderAction("PickUnit", new { id = data.Key.Identifier5, org = "Satker" });}</td>
+                                <td>@data.Key.Identifier2</td>
+                                <td>@{Html.RenderAction("PickUnit", new { id = data.Key.Identifier2, org = "KPPN" });}</td>
+                                @foreach (var item in data.OrderBy(y => y.ColumnName))
+                                {
+                                    <td>@String.Format("{0:n}", item.ColumnValue)</td>
+                                }
+
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+
+            @*Cek apakah ada saldo Hibah minus*@
+            @if (SaldoHibah_SPAN_Minus.Count() != 0)
+            {
+                <p>
+                    Berdasarkan penelitian lebih lanjut, terdapat @SaldoHibah_SPAN_Minus.Count() satker mitra KPPN yang memiliki saldo Kas Lainnya di Kementerian/Lembaga (Hibah)
+                    yang bernilai minus yaitu pada Satker berikut ini:
+                </p>
+                <table border="1" class="dataTable">
+                    <thead>
+                        <tr>
+                            <th>
+                                KPPN
+                            </th>
+                            <th>
+                                Satker
+                            </th>
+                            <th>Saldo Kas Lainnya di K/L</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var stk in SaldoHibah_SPAN_Minus)
+                        {
+                            <tr>
+                                <td>
+                                    @{Html.RenderAction("PickUnit", new { id = stk.Key.Identifier2, org = "KPPN" });}
+                                </td>
+                                <td>
+                                    @{Html.RenderAction("PickUnit", new { id = stk.Key.Identifier5, org = "Satker" });}
+                                </td>
+                                <td>
+                                    @String.Format("{0:n}", stk.OrderBy(y => y.ColumnValue).First().ColumnValue)
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+
+            }
+
+            @*Selanjutnya, kita membandingkan data SPAN dan Erekon menggunakan hasil dari RGL03*@
+            @if (SaldoHibah_Selisih_ERekon_SAI_SPAN == 0 && SaldoHibah_Selisih_ERekon_SIAP_SPAN == 0)
+            {
+                <p align="justify">
+                    Saldo kas di Kementerian/Lembaga menurut SPAN tersebut telah sesuai dengan saldo menurut E-Rekon-LK (SIAP dan SAI) yakni sebesar @String.Format("{0:n}", SaldoBLU_NeracaKPPN)
+                </p>
+            }
+            else
+            {
+                <p align="justify">
+                    Berdasarkan perbandingan data SPAN pada SLDK dengan data e-rekon-LK terdapat perbedaan nilai Kas
+                    di Kementerian/Lembaga. Yakni sebesar Rp @String.Format("{0:n}", SaldoHibah_Selisih_ERekon_SAI_SPAN) antara data SPAN di SLDK dengan SAI pada aplikasi e-Rekon-LK dan
+                    Rp @String.Format("{0:n}", SaldoHibah_Selisih_ERekon_SIAP_SPAN) antara data SPAN di SLDK dengan SIAP pada aplikasi e-Rekon-LK dengan rincian sebagai berikut:
+                </p>
+
+                <table class="dataTable" border="1">
+                    <thead>
+                        <tr>
+                            <th>Periode</th>
+                            <th>Laporan</th>
+                            <th>SPAN-SLDK (Rp)</th>
+                            <th>Data</th>
+                            <th>E-Rekon-LK (Rp)</th>
+                            <th>Selisih (Rp)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td rowspan="2">@Model.SPANReportPeriod</td>
+                            <td>LAK Face</td>
+                            <td rowspan="2" style="vertical-align:middle!important;">@String.Format("{0:n}", SaldoHibah_NeracaKPPN)</td>
+                            <td>SIAP</td>
+                            <td>@String.Format("{0:n}", SaldoHibah_ERekon_SIAP)</td>
+                            <td>@String.Format("{0:n}", SaldoHibah_Selisih_ERekon_SIAP_SPAN)</td>
+                        </tr>
+                        <tr>
+                            <td>Neraca Kas</td>
+                            <td>SAI</td>
+                            <td>@String.Format("{0:n}", SaldoHibah_ERekon_SAI)</td>
+                            <td>@String.Format("{0:n}", SaldoHibah_Selisih_ERekon_SAI_SPAN)</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <p>
+                    Selisih dimaksud disebabkan oleh adanya selisih rekonsiliasi pada @groupedData_ERekon_SPAN_Satker_Selisih_Hibah.Count() Satker yaitu:
+                </p>
+
+                <table border="1" class="dataTable">
+                    <thead>
+                        <tr>
+                            <th>
+                                Kode Satker
+                            </th>
+                            <th>
+                                Nama Satker
+                            </th>
+                            <th>
+                                Kode KPPN
+                            </th>
+                            <th>
+                                Nama KPPN
+                            </th>
+                            <th>
+                                SPAN - SLDK (Rp)
+                            </th>
+                            <th>
+                                SAI e-Rekon (Rp)
+                            </th>
+                            <th>
+                                Selisih SPAN - SAI e-Rekon (Rp)
+                            </th>
+                            <th>
+                                SIAP e-Rekon (Rp)
+                            </th>
+                            <th>
+                                Selisih SPAN - SIAP e-Rekon (Rp)
+                            </th>
+                            <th>
+                                Selisih SIAP-SAI e-Rekon (Rp)
+                            </th>
+                            <th>Catatan</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var satker in groupedData_ERekon_SPAN_Satker_Selisih_Hibah)
+                        {
+                            <tr>
+                                <td>
+                                    @satker.Key.Identifier5
+                                </td>
+                                <td>@{Html.RenderAction("PickUnit", new { id = satker.Key.Identifier5, org = "Satker" });}</td>
+                                <td>
+                                    @satker.Key.Identifier2
+                                </td>
+                                <td>@{Html.RenderAction("PickUnit", new { id = satker.Key.Identifier2, org = "KPPN" });}</td>
+                                <td>
+                                    @String.Format("{0:n}", satker.OrderBy(y => y.ColumnName).Skip(1).First().ColumnValue)
+                                </td>
+                                <td>
+                                    @String.Format("{0:n}", satker.OrderBy(y => y.ColumnName).First().ColumnValue)
+                                </td>
+                                <td>@String.Format("{0:n}", satker.OrderBy(y => y.ColumnName).Skip(1).First().ColumnValue - satker.OrderBy(y => y.ColumnName).First().ColumnValue)</td>
+                                <td>
+                                    @String.Format("{0:n}", satker.OrderBy(y => y.ColumnName).Last().ColumnValue)
+                                </td>
+                                <td>@String.Format("{0:n}", satker.OrderBy(y => y.ColumnName).Skip(1).First().ColumnValue - satker.OrderBy(y => y.ColumnName).Last().ColumnValue)</td>
+                                <td>
+                                    @String.Format("{0:n}", satker.OrderBy(y => y.ColumnName).Skip(2).First().ColumnValue)
+                                </td>
+                                <td>
+                                    @if (satker.Key.Identifier1 != "KONFIRMASI")
+                                    {
+                                        <span>Double posting</span>
+                                    }
+                                    else
+                                    {
+                                        <span>Selisih</span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+
+                    </tbody>
+                </table>
+            }
+
+            @*Di sini dilakukan penyajian data jika terjadi selisih ledger kas dan ledger akrual berdasarkan hasil dari RGL32*@
+
+            @if (SaldoHibah_Akrual_Kas_Selisih != 0)
+            {
+                <p align="justify">
+                    Selain itu, terdapat selisih antara saldo Kas di Kementerian/Lembaga menurut ledger kas dan ledger akrual. Saldo Kas di Kementerian/Lembaga menurut Ledger Kas adalah Rp @String.Format("{0:n}", SaldoHibahKas).
+                    Sementara menurut Ledger Akrual saldo Kas di Kementerian/Lembaga adalah Rp @String.Format("{0:n}", SaldoHibahAkrual) sehingga terdapat selisih saldo kas di Kementerian/Lembaga sebesar Rp @String.Format("{0:n}", SaldoHibah_Akrual_Kas_Selisih).
+                    Selisih tersebut berasal dari @SatkerHibah_Akrual_Kas_Selisih Satker pada @KPPNSatkerHibah_Akrual_Kas_Selisih KPPN dengan rincian sebagai berikut:
+                </p>
+                <table class="dataTable" border="1">
+                    <thead>
+                        <tr>
+                            <th>Kode Satker</th>
+                            <th>Nama Satker</th>
+                            <th>Kode KPPN</th>
+                            <th>KPPN</th>
+                            <th>Ledger Akrual</th>
+                            <th>Ledger Kas</th>
+                            <th>Selisih</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @{var groupedData = Model.AssuranceResult.Where(y => y.RiskCode == "RGL32").GroupBy(x => new { Identifier1 = x.Identifier1, Identifier2 = x.Identifier2 });
+                        }
+
+                        @foreach (var data in groupedData.Where(y => y.Where(x => x.OutputColumnList.isAnomalyIdentifier && x.ColumnValue != 0).Count() != 0))
+                        {
+                            <tr>
+                                <td>@data.Key.Identifier1</td>
+                                <td>@{Html.RenderAction("PickUnit", new { id = data.Key.Identifier1, org = "Satker" });}</td>
+                                <td>@data.Key.Identifier2</td>
+                                <td>@{Html.RenderAction("PickUnit", new { id = data.Key.Identifier2, org = "KPPN" });}</td>
+                                @foreach (var item in data.OrderBy(y => y.ColumnName))
+                                {
+                                    <td>@String.Format("{0:n}", item.ColumnValue)</td>
+                                }
+
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+            <br />
+            @if (Model.Responses.Where(y => y.UniverseDetails.AreaName == "Hibah").Count() != 0)
+            {
+                foreach (var resp in Model.Responses.Where(y => y.UniverseDetails.AreaName == "Hibah"))
+                {
+                    @Html.Raw(resp.Content)
+                }
+
+            }
+            <br />
+            <li><strong>Kas pada BLU</strong></li>
+
+            @*Pertama, kita membandingkan dulu antara Neraca KPPN/Neraca Kas dengan LAK Face menggunakan hasil dari RGL02*@
+            @if (SaldoBLU_NeracaKPPN_LAKFace_Selisih == 0)
+            {
+
+                <p align="justify">
+                    Saldo Kas BLU per @Model.SPANReportPeriod berdasarkan data SPAN pada SLDK,
+                    menunjukkan tidak adanya perbedaan antara saldo menurut LAK Face dan Neraca KPPN, yaitu sebesar Rp @String.Format("{0:n}", SaldoBLU_NeracaKPPN).
+                    Kas BLU dimaksud berasal dari @SatkerBLU Satker pada @KPPNSatkerBLU KPPN.
+                </p>
+
+            }
+            else
+            {
+                <p align="justify">
+                    Saldo Kas BLU menurut Neraca KPPN adalah Rp @String.Format("{0:n}", SaldoBLU_NeracaKPPN). Kas BLU dimaksud berasal dari @SatkerBLU Satker pada @KPPNSatkerBLU KPPN.
+                    Namun demikian, berdasarkan data SPAN pada SLDK, terdapat perbedaan saldo Kas BLU per @Model.SPANReportPeriod menurut Neraca KPPN dan LAK Face.
+                    Saldo menurut LAK Face adalah Rp @String.Format("{0:n}", SaldoBLU_LAKFace) sehingga terdapat selisih saldo kas BLU sebesar Rp @String.Format("{0:n}", SaldoBLU_NeracaKPPN_LAKFace_Selisih).
+                    Selisih tersebut berasal dari @SatkerBLU_NeracaKPPN_LAKFace_Selisih Satker pada @KPPNSatkerBLU_NeracaKPPN_LAKFace_Selisih KPPN dengan rincian sebagai berikut:
+                </p>
+                <table class="dataTable" border="1">
+                    <thead>
+                        <tr>
+                            <th>Kode Satker</th>
+                            <th>Nama Satker</th>
+                            <th>Kode KPPN</th>
+                            <th>KPPN</th>
+                            <th>Neraca KPPN</th>
+                            <th>LAK Face</th>
+                            <th>Selisih</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @{var groupedData = Model.AssuranceResult.Where(y => y.RiskCode == "RGL02" && (y.ColumnName == "SALDO_KAS_BLU" || y.ColumnName == "SALDO_KAS_LAK" || y.ColumnName == "SELISIH_SALDO_KAS_LAK_BLU")).GroupBy(x => new { Identifier5 = x.Identifier5, Identifier2 = x.Identifier2 });
+                        }
+
+                        @foreach (var data in groupedData.Where(y => y.Where(x => x.OutputColumnList.isAnomalyIdentifier && x.ColumnValue != 0).Count() != 0))
+                        {
+                            <tr>
+                                <td>@data.Key.Identifier5</td>
+                                <td>@{Html.RenderAction("PickUnit", new { id = data.Key.Identifier5, org = "Satker" });}</td>
+                                <td>@data.Key.Identifier2</td>
+                                <td>@{Html.RenderAction("PickUnit", new { id = data.Key.Identifier2, org = "KPPN" });}</td>
+                                @foreach (var item in data.OrderBy(y => y.ColumnName))
+                                {
+                                    <td>@String.Format("{0:n}", item.ColumnValue)</td>
+                                }
+
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+
+            @*Berikutnya dicek apakah terdapat saldo minus di SPAN*@
+            @if (SaldoBLU_SPAN_Minus.Count() != 0)
+            {
+                <p>
+                    Berdasarkan penelitian lebih lanjut, terdapat @SaldoBLU_SPAN_Minus.Count() satker mitra KPPN yang memiliki saldo Kas BLU
+                    yang bernilai minus yaitu pada Satker berikut ini:
+                </p>
+                <table border="1" class="dataTable">
+                    <thead>
+                        <tr>
+                            <th>
+                                KPPN
+                            </th>
+                            <th>
+                                Satker
+                            </th>
+                            <th>Saldo Kas BLU</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var stk in SaldoBLU_SPAN_Minus)
+                        {
+                            <tr>
+                                <td>
+                                    @{Html.RenderAction("PickUnit", new { id = stk.Key.Identifier2, org = "KPPN" });}
+                                </td>
+                                <td>
+                                    @{Html.RenderAction("PickUnit", new { id = stk.Key.Identifier4, org = "Satker" });}
+                                </td>
+                                <td>
+                                    @String.Format("{0:n}", stk.OrderBy(y => y.ColumnValue).First().ColumnValue)
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+
+            }
+
+            @*Selanjutnya, kita membandingkan data SPAN dan Erekon menggunakan hasil dari RGL02*@
+            @if (SaldoBLU_Selisih_ERekon_SAI_SPAN == 0 && SaldoBLU_Selisih_ERekon_SIAP_SPAN == 0)
+            {
+                <p align="justify">
+                    Saldo kas BLU menurut SPAN tersebut telah sesuai dengan saldo menurut E-Rekon-LK (SIAP dan SAI) yakni sebesar @String.Format("{0:n}", SaldoBLU_NeracaKPPN)
+                </p>
+            }
+            else
+            {
+                <p align="justify">
+                    Berdasarkan perbandingan data SPAN pada SLDK dengan data e-rekon-LK terdapat perbedaan nilai Kas
+                    BLU. Yakni sebesar Rp @String.Format("{0:n}", SaldoBLU_Selisih_ERekon_SAI_SPAN) antara data SPAN di SLDK dengan SAI pada aplikasi e-Rekon-LK dan
+                    Rp @String.Format("{0:n}", SaldoBLU_Selisih_ERekon_SIAP_SPAN) antara data SPAN di SLDK dengan SIAP pada aplikasi e-Rekon-LK dengan rincian sebagai berikut:
+                </p>
+
+                <table class="dataTable" border="1">
+                    <thead>
+                        <tr>
+                            <th>Periode</th>
+                            <th>Laporan</th>
+                            <th>SPAN-SLDK (Rp)</th>
+                            <th>Data</th>
+                            <th>E-Rekon-LK (Rp)</th>
+                            <th>Selisih (Rp)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td rowspan="2">@Model.SPANReportPeriod</td>
+                            <td>LAK Face</td>
+                            <td rowspan="2" style="vertical-align:middle!important;">@String.Format("{0:n}", SaldoBLU_NeracaKPPN)</td>
+                            <td>SIAP</td>
+                            <td>@String.Format("{0:n}", SaldoBLU_ERekon_SIAP)</td>
+                            <td>@String.Format("{0:n}", SaldoBLU_Selisih_ERekon_SIAP_SPAN)</td>
+                        </tr>
+                        <tr>
+                            <td>Neraca Kas</td>
+                            <td>SAI</td>
+                            <td>@String.Format("{0:n}", SaldoBLU_ERekon_SAI)</td>
+                            <td>@String.Format("{0:n}", SaldoBLU_Selisih_ERekon_SAI_SPAN)</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <p>
+                    Selisih dimaksud disebabkan oleh adanya selisih rekonsiliasi pada @groupedData_ERekon_SPAN_Satker_Selisih_BLU.Count() Satker yaitu:
+                </p>
+
+                <table border="1" class="dataTable">
+                    <thead>
+                        <tr>
+                            <th>
+                                Kode Satker
+                            </th>
+                            <th>
+                                Nama Satker
+                            </th>
+                            <th>
+                                Kode KPPN
+                            </th>
+                            <th>
+                                Nama KPPN
+                            </th>
+                            <th>
+                                SPAN - SLDK (Rp)
+                            </th>
+                            <th>
+                                SAI e-Rekon (Rp)
+                            </th>
+                            <th>
+                                Selisih SPAN - SAI e-Rekon (Rp)
+                            </th>
+                            <th>
+                                SIAP e-Rekon (Rp)
+                            </th>
+                            <th>
+                                Selisih SPAN - SIAP e-Rekon (Rp)
+                            </th>
+                            <th>
+                                Selisih SIAP-SAI e-Rekon (Rp)
+                            </th>
+                            <th>Catatan</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var satker in groupedData_ERekon_SPAN_Satker_Selisih_BLU)
+                        {
+                            <tr>
+                                <td>
+                                    @satker.Key.Identifier5
+                                </td>
+                                <td>@{Html.RenderAction("PickUnit", new { id = satker.Key.Identifier5, org = "Satker" });}</td>
+                                <td>
+                                    @satker.Key.Identifier2
+                                </td>
+                                <td>@{Html.RenderAction("PickUnit", new { id = satker.Key.Identifier2, org = "KPPN" });}</td>
+                                <td>
+                                    @String.Format("{0:n}", satker.OrderBy(y => y.ColumnName).Skip(2).First().ColumnValue)
+                                </td>
+                                <td>
+                                    @String.Format("{0:n}", satker.OrderBy(y => y.ColumnName).First().ColumnValue)
+                                </td>
+                                <td>@String.Format("{0:n}", satker.OrderBy(y => y.ColumnName).Skip(2).First().ColumnValue - satker.OrderBy(y => y.ColumnName).First().ColumnValue)</td>
+                                <td>
+                                    @String.Format("{0:n}", satker.OrderBy(y => y.ColumnName).Skip(1).First().ColumnValue)
+                                </td>
+                                <td>@String.Format("{0:n}", satker.OrderBy(y => y.ColumnName).Skip(2).First().ColumnValue - satker.OrderBy(y => y.ColumnName).Skip(1).First().ColumnValue)</td>
+                                <td>
+                                    @String.Format("{0:n}", satker.OrderBy(y => y.ColumnName).Last().ColumnValue)
+                                </td>
+                                <td>
+                                    @if (satker.Key.Identifier1 != "KONFIRMASI")
+                                    {
+                                        <span>Double posting</span>
+                                    }
+                                    else
+                                    {
+                                        <span>Selisih</span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+
+                    </tbody>
+                </table>
+            }
+
+            @*Di sini dilakukan penyajian data jika terjadi selisih ledger kas dan ledger akrual berdasarkan hasil dari RGL20*@
+
+            @if (SaldoBLU_Akrual_Kas_Selisih != 0)
+            {
+                <p align="justify">
+                    Selain itu, terdapat selisih antara saldo Kas BLU menurut ledger kas dan ledger akrual. Saldo Kas BLU menurut Ledger Kas adalah Rp @String.Format("{0:n}", SaldoBLUKas).
+                    Sementara menurut Ledger Akrual saldo Kas BLU adalah Rp @String.Format("{0:n}", SaldoBLUAkrual) sehingga terdapat selisih saldo kas BLU sebesar Rp @String.Format("{0:n}", SaldoBLU_Akrual_Kas_Selisih).
+                    Selisih tersebut berasal dari @SatkerBLU_Akrual_Kas_Selisih Satker pada @KPPNSatkerBLU_Akrual_Kas_Selisih KPPN dengan rincian sebagai berikut:
+                </p>
+                <table class="dataTable" border="1">
+                    <thead>
+                        <tr>
+                            <th>Kode Satker</th>
+                            <th>Nama Satker</th>
+                            <th>Kode KPPN</th>
+                            <th>KPPN</th>
+                            <th>Ledger Akrual</th>
+                            <th>Ledger Kas</th>
+                            <th>Selisih</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @{var groupedData = Model.AssuranceResult.Where(y => y.RiskCode == "RGL31").GroupBy(x => new { Identifier1 = x.Identifier1, Identifier2 = x.Identifier2 });
+                        }
+
+                        @foreach (var data in groupedData.Where(y => y.Where(x => x.OutputColumnList.isAnomalyIdentifier && x.ColumnValue != 0).Count() != 0))
+                        {
+                            <tr>
+                                <td>@data.Key.Identifier1</td>
+                                <td>@{Html.RenderAction("PickUnit", new { id = data.Key.Identifier1, org = "Satker" });}</td>
+                                <td>@data.Key.Identifier2</td>
+                                <td>@{Html.RenderAction("PickUnit", new { id = data.Key.Identifier2, org = "KPPN" });}</td>
+                                @foreach (var item in data.OrderBy(y => y.ColumnName))
+                                {
+                                    <td>@String.Format("{0:n}", item.ColumnValue)</td>
+                                }
+
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+
+            <br />
+            @if (Model.Responses.Where(y => y.UniverseDetails.AreaName == "BLU").Count() != 0)
+            {
+                foreach (var resp in Model.Responses.Where(y => y.UniverseDetails.AreaName == "BLU"))
+                {
+                    @Html.Raw(resp.Content)
+                }
+
+            }
+            <li><strong>Uang Muka dari Rekening Khusus</strong></li>
+            @*Variable Declaration*@
+            @{
+                var Neraca_UMReksus_Saldo = Model.AssuranceResult.Where(y => y.RiskCode == "RR11" && y.ColumnName == "UM_REKSUS_AKRUAL").Sum(y => y.ColumnValue);
+                var Neraca_UMReksus_1122_Akrual = Model.AssuranceResult.Where(y => y.RiskCode == "RR11" && y.ColumnName == "TOTAL_AKUN_1122_AKRUAL").Sum(y => y.ColumnValue);
+                var Neraca_UMReksus_1122_Cash = Model.AssuranceResult.Where(y => y.RiskCode == "RR11" && y.ColumnName == "TOTAL_AKUN_1122_CASH").Sum(y => y.ColumnValue);
+                var Neraca_UMReksus_SelisihAkrual = Neraca_UMReksus_Saldo - Neraca_UMReksus_1122_Akrual;
+                var Neraca_UMReksus_SelisihKas = Neraca_UMReksus_Saldo - Neraca_UMReksus_1122_Cash;
+            }
+
+            @if (Neraca_UMReksus_SelisihAkrual != 0 || Neraca_UMReksus_SelisihKas != 0)
+            {
+                <p align="justify">
+                    Saldo akhir Uang Muka dari Rekening Khusus per @Model.SPANReportPeriod yang disajikan dalam Neraca adalah sebesar Rp @String.Format("{0:n}", Neraca_UMReksus_Saldo). Namun demikian, saldo tersebut belum sesuai dengan akun-akun pembentuknya pada Neraca lajur. Rincian perhitungan saldo akun tersebut adalah sebagai berikut:
+                </p>
+            }
+
+            else
+            {
+                <p align="justify">
+                    Saldo akhir Uang Muka dari Rekening Khusus per @Model.SPANReportPeriod yang disajikan dalam Neraca adalah sebesar Rp @String.Format("{0:n}", Neraca_UMReksus_Saldo) dan telah sesuai dengan Neraca lajur kas dan akrual. Rincian perhitungan saldo akun tersebut adalah sebagai berikut:
+                </p>
+            }
+
+            <table class="dataTable" border="1">
+                <thead>
+                    <tr>
+                        <th>Uraian</th>
+                        <th>Saldo LK (Rp)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            <strong>A. Saldo Uang Muka dari Rekening Khusus (Neraca)</strong>
+                        </td>
+                        <td align="right">
+                            @String.Format("{0:n}", Neraca_UMReksus_Saldo)
+                        </td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td><strong>B. Neraca Lajur Ledger Kas</strong></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Jumlah Akun 1122 pada Legder Kas
+                        </td>
+                        <td align="right">
+                            @String.Format("{0:n}", Neraca_UMReksus_1122_Cash)
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>A-B</strong></td>
+                        <td align="right"><strong>@String.Format("{0:n}", Neraca_UMReksus_SelisihKas)</strong></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td><strong>C. Neraca Lajur Ledger Akrual</strong></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Jumlah Akun 1122 pada Legder Akrual
+                        </td>
+                        <td align="right">
+                            @String.Format("{0:n}", Neraca_UMReksus_1122_Akrual)
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>A-C</strong></td>
+                        <td align="right"><strong>@String.Format("{0:n}", Neraca_UMReksus_SelisihAkrual)</strong></td>
+                    </tr>
+                </tbody>
+            </table>
+            <br />
+            <li><strong>Dana yang Dibatasi Penggunaannya</strong></li>
+            @*Variable Declaration*@
+            @{
+                var Neraca_DYDP_Saldo = Model.AssuranceResult.Where(y => y.RiskCode == "RR13" && y.ColumnName == "DYDP_AKRUAL").Sum(y => y.ColumnValue);
+                var Neraca_DYDP_1631_Akrual = Model.AssuranceResult.Where(y => y.RiskCode == "RR13" && y.ColumnName == "TOTAL_AKUN_1631_AKRUAL").Sum(y => y.ColumnValue);
+                var Neraca_DYDP_1631_Cash = Model.AssuranceResult.Where(y => y.RiskCode == "RR13" && y.ColumnName == "TOTAL_AKUN_1631_CASH").Sum(y => y.ColumnValue);
+                var Neraca_DYDP_SelisihAkrual = Neraca_DYDP_Saldo - Neraca_DYDP_1631_Akrual;
+                var Neraca_DYDP_SelisihKas = Neraca_DYDP_Saldo - Neraca_DYDP_1631_Cash;
+            }
+
+            @if (Neraca_UMReksus_SelisihAkrual != 0 || Neraca_UMReksus_SelisihKas != 0)
+            {
+                <p align="justify">
+                    Saldo akhir Dana yang Dibatasi Penggunaannya per @Model.SPANReportPeriod yang disajikan dalam Neraca adalah sebesar Rp @String.Format("{0:n}", Neraca_DYDP_Saldo). Namun demikian, saldo tersebut belum sesuai dengan akun-akun pembentuknya pada Neraca lajur. Rincian perhitungan saldo akun tersebut adalah sebagai berikut:
+                </p>
+            }
+
+            else
+            {
+                <p align="justify">
+                    Saldo akhir Dana yang Dibatasi Penggunaannya per @Model.SPANReportPeriod yang disajikan dalam Neraca adalah sebesar Rp @String.Format("{0:n}", Neraca_DYDP_Saldo) dan telah sesuai dengan Neraca lajur kas dan akrual. Rincian perhitungan saldo akun tersebut adalah sebagai berikut:
+                </p>
+            }
+
+            <table class="dataTable" border="1">
+                <thead>
+                    <tr>
+                        <th>Uraian</th>
+                        <th>Saldo LK (Rp)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            <strong>A. Saldo Dana yang Dibatasi Penggunaannya (Neraca)</strong>
+                        </td>
+                        <td align="right">
+                            @String.Format("{0:n}", Neraca_DYDP_Saldo)
+                        </td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td><strong>B. Neraca Lajur Ledger Kas</strong></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Jumlah Akun 1631 pada Legder Kas
+                        </td>
+                        <td align="right">
+                            @String.Format("{0:n}", Neraca_DYDP_1631_Cash)
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>A-B</strong></td>
+                        <td align="right"><strong>@String.Format("{0:n}", Neraca_DYDP_SelisihKas)</strong></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td><strong>C. Neraca Lajur Ledger Akrual</strong></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Jumlah Akun 1631 pada Legder Akrual
+                        </td>
+                        <td align="right">
+                            @String.Format("{0:n}", Neraca_DYDP_1631_Akrual)
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>A-C</strong></td>
+                        <td align="right"><strong>@String.Format("{0:n}", Neraca_DYDP_SelisihAkrual)</strong></td>
+                    </tr>
+                </tbody>
+            </table>
+            <br />
+            <li><strong>Investasi dalam Deposito</strong></li>
+            @*Variable Declaration*@
+            @{
+                var Neraca_Investasi_Deposito_Saldo = Model.AssuranceResult.Where(y => y.RiskCode == "RR12" && y.ColumnName == "INV_DEP_AKRUAL").Sum(y => y.ColumnValue);
+                var Neraca_Investasi_Deposito_1131_Akrual = Model.AssuranceResult.Where(y => y.RiskCode == "RR12" && y.ColumnName == "TOTAL_AKUN_1131_AKRUAL").Sum(y => y.ColumnValue);
+                var Neraca_Investasi_Deposito_1131_Cash = Model.AssuranceResult.Where(y => y.RiskCode == "RR12" && y.ColumnName == "TOTAL_AKUN_1131_CASH").Sum(y => y.ColumnValue);
+                var Neraca_Investasi_Deposito_817616_Cash = Model.AssuranceResult.Where(y => y.RiskCode == "RR12" && y.ColumnName == "SALDO_817616_CASH").Sum(y => y.ColumnValue);
+                var Neraca_Investasi_Deposito_827616_Cash = Model.AssuranceResult.Where(y => y.RiskCode == "RR12" && y.ColumnName == "SALDO_827616_CASH").Sum(y => y.ColumnValue);
+                var Neraca_Investasi_Deposito_SelisihAkrual = Neraca_Investasi_Deposito_Saldo - Neraca_Investasi_Deposito_1131_Akrual;
+                var Neraca_Investasi_Deposito_SelisihKas = Neraca_Investasi_Deposito_Saldo - (Neraca_Investasi_Deposito_1131_Cash + Neraca_Investasi_Deposito_817616_Cash + Neraca_Investasi_Deposito_827616_Cash);
+            }
+
+            <p align="justify">
+                Saldo akhir Investasi dalam Deposito per @Model.SPANReportPeriod yang disajikan dalam Neraca adalah sebesar Rp @String.Format("{0:n}", Neraca_Investasi_Deposito_Saldo).
+                Saldo Investasi dalam Deposito pada neraca menunjukkan nilai outstanding transaksi penempatan kas Pemerintah di Bank Umum Mitra atau instrumen penempatan uang negara lainnya sesuai dengan ketentuan yang berlaku untuk jangka waktu penempatan mulai 3 s.d. 12 bulan sejak tanggal penempatan.
+                Penempatan dana pada Bank Umum Mitra (BUM) ini merupakan salah satu modalitas yang digunakan pemerintah dalam Program Pemulihan Ekonomi Nasional (PEN).
+                Kebijakan akuntansi atas penempatan dana telah diatur dalam PMK nomor 225/PMK.05/2019 tentang Kebijakan Akuntansi Pemerintah Pusat yaitu Kebijakan Akuntansi Investasi yang dapat segera dicairkan dan dimaksudkan untuk dimiliki selama lebih dari 3 bulan sampai dengan 12 bulan.
+            </p>
+
+            @if (Neraca_Investasi_Deposito_SelisihAkrual != 0 || Neraca_Investasi_Deposito_SelisihKas != 0)
+            {
+                <p align="justify">
+                    Namun demikian, saldo akhir Investasi dalam Deposito tersebut belum sesuai dengan akun-akun pembentuknya pada Neraca lajur. Rincian perhitungan saldo Investasi dalam Deposito adalah sebagai berikut:
+                </p>
+            }
+
+            else
+            {
+                <p align="justify">
+                    Saldo akhir Investasi dalam Deposito tersebut telah sesuai dengan Neraca lajur kas dan akrual. Rincian perhitungan saldo Investasi dalam Deposito adalah sebagai berikut:
+                </p>
+            }
+
+            <table class="dataTable" border="1">
+                <thead>
+                    <tr>
+                        <th>Uraian</th>
+                        <th>Saldo LK (Rp)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            <strong>A. Saldo Investasi dalam Deposito (Neraca)</strong>
+                        </td>
+                        <td align="right">
+                            @String.Format("{0:n}", Neraca_Investasi_Deposito_Saldo)
+                        </td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td><strong>B. Neraca Lajur Ledger Kas</strong></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Jumlah Akun 1131 pada Legder Kas
+                        </td>
+                        <td align="right">
+                            @String.Format("{0:n}", Neraca_Investasi_Deposito_1131_Cash)
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Pengeluaran Investasi dalam Deposito (817616)
+                        </td>
+                        <td align="right">
+                            @String.Format("{0:n}", Neraca_Investasi_Deposito_817616_Cash)
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Pengeluaran Investasi dalam Deposito (827616)
+                        </td>
+                        <td align="right">
+                            @String.Format("{0:n}", Neraca_Investasi_Deposito_827616_Cash)
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Jumlah Rincian Akun pada Legder Kas
+                        </td>
+                        <td align="right">
+                            @String.Format("{0:n}", Neraca_Investasi_Deposito_1131_Cash + Neraca_Investasi_Deposito_817616_Cash + Neraca_Investasi_Deposito_827616_Cash)
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>A-B</strong></td>
+                        <td align="right"><strong>@String.Format("{0:n}", Neraca_Investasi_Deposito_SelisihKas)</strong></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td><strong>C. Neraca Lajur Ledger Akrual</strong></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Jumlah Akun 1131 pada Legder Akrual
+                        </td>
+                        <td align="right">
+                            @String.Format("{0:n}", Neraca_Investasi_Deposito_1131_Akrual)
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>A-C</strong></td>
+                        <td align="right"><strong>@String.Format("{0:n}", Neraca_Investasi_Deposito_SelisihAkrual)</strong></td>
+                    </tr>
+                </tbody>
+            </table>
+            <br />
+
+            <li><strong>Utang kepada Pihak Ketiga</strong></li>
+            @*Variable Declaration*@
+            @{
+                var Neraca_UPK_Saldo = Model.AssuranceResult.Where(y => y.RiskCode == "RR14" && y.ColumnName == "UPK_AKRUAL").Sum(y => y.ColumnValue);
+                var Neraca_UPK_2121_Akrual = Model.AssuranceResult.Where(y => y.RiskCode == "RR14" && y.ColumnName == "TOTAL_AKUN_2121_AKRUAL").Sum(y => y.ColumnValue);
+                var Neraca_UPK_2121_Cash = Model.AssuranceResult.Where(y => y.RiskCode == "RR14" && y.ColumnName == "TOTAL_AKUN_2121_CASH").Sum(y => y.ColumnValue);
+                var Neraca_UPK_219913_Akrual = Model.AssuranceResult.Where(y => y.RiskCode == "RR14" && y.ColumnName == "SALDO_219913_AKRUAL").Sum(y => y.ColumnValue);
+                var Neraca_UPK_219913_Cash = Model.AssuranceResult.Where(y => y.RiskCode == "RR14" && y.ColumnName == "SALDO_219913_CASH").Sum(y => y.ColumnValue);
+                var Neraca_UPK_219941_Akrual = Model.AssuranceResult.Where(y => y.RiskCode == "RR14" && y.ColumnName == "SALDO_219941_AKRUAL").Sum(y => y.ColumnValue);
+                var Neraca_UPK_219941_Cash = Model.AssuranceResult.Where(y => y.RiskCode == "RR14" && y.ColumnName == "SALDO_219941_CASH").Sum(y => y.ColumnValue);
+                var Neraca_UPK_8_Cash = Model.AssuranceResult.Where(y => y.RiskCode == "RR14" && y.ColumnName == "SALDO_AKUN_8_CASH").Sum(y => y.ColumnValue);
+                var Neraca_UPK_SelisihAkrual = Neraca_UPK_Saldo - (Neraca_UPK_2121_Akrual+Neraca_UPK_219913_Akrual+Neraca_UPK_219941_Akrual);
+                var Neraca_UPK_SelisihKas = Neraca_UPK_Saldo - (Neraca_UPK_2121_Cash+Neraca_UPK_219913_Cash+Neraca_UPK_219941_Cash+Neraca_UPK_8_Cash);
+            }
+
+        <p align="justify">
+            Saldo akhir Utang kepada Pihak Ketiga per @Model.SPANReportPeriod yang disajikan dalam Neraca adalah sebesar Rp @String.Format("{0:n}", Neraca_UPK_Saldo).
+            Kewajiban Jangka Pendek pada Unit Akuntansi Keuangan Kuasa BUN Pusat adalah Utang kepada Pihak Ketiga berupa Pengeluaran Non Anggaran Pihak Ketiga yang Masih Harus Dibayar, Utang kepada Pihak Ketiga Lainnya, Utang Jangka Pendek Lain-lain, dan Utang Jangka Pendek sementara karena kesalahan Sistem Perbankan. 
+            
+        </p>
+
+            @if (Neraca_UPK_SelisihAkrual != 0 || Neraca_UPK_SelisihKas != 0)
+            {
+        <p align="justify">
+            Namun demikian, saldo akhir Utang kepada Pihak Ketiga tersebut belum sesuai dengan akun-akun pembentuknya pada Neraca lajur. Rincian perhitungan saldo Investasi dalam Deposito Utang kepada Pihak Ketiga sebagai berikut:
+        </p>
+            }
+
+            else
+            {
+        <p align="justify">
+            Saldo akhir Utang kepada Pihak Ketiga tersebut telah sesuai dengan Neraca lajur kas dan akrual. Rincian perhitungan saldo Utang kepada Pihak Ketiga adalah sebagai berikut:
+        </p>
+            }
+
+            <table class="dataTable" border="1">
+                <thead>
+                    <tr>
+                        <th>Uraian</th>
+                        <th>Saldo LK (Rp)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            <strong>A. Saldo Utang kepada Pihak Ketiga (Neraca)</strong>
+                        </td>
+                        <td align="right">
+                            @String.Format("{0:n}", Neraca_UPK_Saldo)
+                        </td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td><strong>B. Neraca Lajur Ledger Kas</strong></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Jumlah Kelompok Akun  Utang kepada Pihak Ketiga I (2121)
+                        </td>
+                        <td align="right">
+                            @String.Format("{0:n}", Neraca_UPK_2121_Cash)
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Utang Jangka Pendek Lain-lain (219913)
+                        </td>
+                        <td align="right">
+                            @String.Format("{0:n}", Neraca_UPK_219913_Cash)
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Utang Jangka Pendek sementara karena kesalahan Sistem Perbankan (219941)
+                        </td>
+                        <td align="right">
+                            @String.Format("{0:n}", Neraca_UPK_219941_Cash)
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Total Akun 8
+                        </td>
+                        <td align="right">
+                            @String.Format("{0:n}", Neraca_UPK_8_Cash)
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Jumlah Rincian Akun pada Legder Kas
+                        </td>
+                        <td align="right">
+                            @String.Format("{0:n}", Neraca_UPK_2121_Cash + Neraca_UPK_219913_Cash + Neraca_UPK_219941_Cash + Neraca_UPK_8_Cash)
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>A-B</strong></td>
+                        <td align="right"><strong>@String.Format("{0:n}", Neraca_UPK_SelisihKas)</strong></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td><strong>C. Neraca Lajur Ledger Akrual</strong></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Jumlah Kelompok Akun  Utang kepada Pihak Ketiga I (2121)
+                        </td>
+                        <td align="right">
+                            @String.Format("{0:n}", Neraca_UPK_2121_Akrual)
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Utang Jangka Pendek Lain-lain (219913)
+                        </td>
+                        <td align="right">
+                            @String.Format("{0:n}", Neraca_UPK_219913_Akrual)
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Utang Jangka Pendek sementara karena kesalahan Sistem Perbankan (219941)
+                        </td>
+                        <td align="right">
+                            @String.Format("{0:n}", Neraca_UPK_219941_Akrual)
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Jumlah Rincian Akun pada Legder Akrual
+                        </td>
+                        <td align="right">
+                            @String.Format("{0:n}", Neraca_UPK_2121_Akrual + Neraca_UPK_219913_Akrual + Neraca_UPK_219941_Akrual)
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>A-C</strong></td>
+                        <td align="right"><strong>@String.Format("{0:n}", Neraca_UPK_SelisihAkrual)</strong></td>
+                    </tr>
+                </tbody>
+            </table>
+            <br />
+        </ol>
+    </ol>
+
+    <li><strong>Laporan Perubahan Ekuitas</strong></li>
+    <p align="justifty">
+        Berdasarkan Peraturan Menteri Keuangan Nomor 215/PMK.05/2016 tentang Perubahan atas Peraturan Menteri Keuangan Nomor 213/PMK.05/2013 tentang Sistem Akuntansi dan Pelaporan Keuangan Pemerintah Pusat Bab II Sistem Akuntansi dan Pelaporan Keuangan Bendahara Umum Negara halaman 59, “Namun dalam hal UAKBUN-Daerah, UAKKBUN-Kanwil, dan UAKBUN-Pusat belum dapat menyusun LPE berdasarkan data yang terdapat pada aplikasi terintegrasi. Ketentuan mengenai Sistem Akuntansi dan Pelaporan Keuangan Pusat (SiAP) diatur dengan Peraturan Menteri Keuangan.”
+    </p>
+    <p align="justify">
+        Berdasarkan Pasal 9 ayat (2) huruf c Peraturan Menteri Keuangan Nomor 221/PMK.05/2016 Tentang Perubahan atas Peraturan Menteri Keuangan Nomor 216/PMK.05/2015 tentang Tata Cara Penyusunan dan Penyampaian Laporan Keuangan Bendahara Umum Negara bahwa Laporan Keuangan UAKBUN-Daerah paling sedikit terdiri dari Neraca, LAK, LPE, dan CaLK. Pasal 9 ayat (3) menyebutkan bahwa dalam hal UAKBUN Daerah, UAKKBUN Kanwil, dan UAKBUN Pusat belum dapat menyusun LPE sebagaimana dimaksud dalam ayat (2), LPE disusun oleh UAP BUN AP.
+    </p>
+    <ol type="1">
+        <li><strong>Ekuitas Awal</strong></li>
+        <li><strong>Surplus (Defisit) - LO </strong></li>
+        <li><strong>Dampak Kumulatif Perubahan Kebijakan-Kesalahan Mendasar</strong></li>
+        <ol type="a">
+            <li><strong>Koreksi SAL</strong></li>
+            <li><strong>Koreksi Lain-lain</strong></li>
+        </ol>
+        <li><strong>Antar Entitas</strong></li>
+        <li><strong>Keuntungan/Kerugian yang Belum Terealisasi</strong></li>
+        <li><strong>Mutasi Ekuitas BUN di K/L</strong></li>
+        <li><strong>Ekuitas Akhir</strong></li>
+    </ol>
+</ol>
+

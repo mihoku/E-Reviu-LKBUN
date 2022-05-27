@@ -1,0 +1,44 @@
+﻿@model IEnumerable<E_Reviu_LKBUN.Models.KPPN>
+
+@{
+    ViewBag.Title = "Hasil Pengujian Rinci per KPPN";
+    ViewBag.Title2 = ViewBag.ST;
+    ViewBag.Subtitle = ViewBag.ShortName;
+    var ReportName = ViewBag.Subtitle + " " + ViewBag.SPANReportPeriod;
+}
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card shadow-0 border b-r-0">
+                @*<div class="card-header card-header-info">
+                <h4 class="card-title">@ViewBag.Title</h4>
+
+                </div>*@
+                <div class="card-body table-responsive">
+                    <a href="@Url.Action("Details",new { id=ViewBag.AssuranceID})" class="btn btn-md btn-primary">Lihat Rincian Hasil Pengujian</a> <a href="@Url.Action("Preview", new { id=ViewBag.AssuranceID })" class="btn btn-md btn-info">Lihat Hasil Analisis Keseluruhan</a><br /><br />
+                                                                                                                                                                                                                                                                                                                                          <div id="KPPN">
+                                                                                                                                                                                                                                                                                                                                              <table id="basic-1">
+                                                                                                                                                                                                                                                                                                                                                  <thead>
+                                                                                                                                                                                                                                                                                                                                                      <tr>
+                                                                                                                                                                                                                                                                                                                                                          <th>Kode KPPN</th>
+                                                                                                                                                                                                                                                                                                                                                          <th>Nama KPPN</th>
+                                                                                                                                                                                                                                                                                                                                                          <th></th>
+                                                                                                                                                                                                                                                                                                                                                      </tr>
+                                                                                                                                                                                                                                                                                                                                                  </thead>
+                                                                                                                                                                                                                                                                                                                                                  <tbody>
+                                                                                                                                                                                                                                                                                                                                                      @foreach(var item in Model)
+                                                                                                                                                                                                                                                                                                                                                      {
+                                                                                                                                                                                                                                                                                                                                                          <tr>
+                                                                                                                                                                                                                                                                                                                                                              <td>@item.KodeKPPN</td>
+                                                                                                                                                                                                                                                                                                                                                              <td>@item.NamaKPPN</td>
+                                                                                                                                                                                                                                                                                                                                                              <td><a href="@Url.Action("PreviewKPPN",new { id=ViewBag.AssuranceID, code=item.KodeKPPN})" class="btn btn-md btn-primary">Lihat Rincian</a></td>
+                                                                                                                                                                                                                                                                                                                                                          </tr>
+                                                                                                                                                                                                                                                                                                                                                      }
+                                                                                                                                                                                                                                                                                                                                                  </tbody>
+                                                                                                                                                                                                                                                                                                                                              </table>
+                                                                                                                                                                                                                                                                                                                                              
+                                                                                                                                                                                                                                                                                                                                          </div>
+                </div>
+            </div>
+        </div>
+    </div>

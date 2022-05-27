@@ -1,0 +1,55 @@
+﻿@model IEnumerable<E_Reviu_LKBUN.Models.Unit>
+
+@{
+    ViewBag.Title = "Unit";
+    ViewBag.Title2 = "Bendahara Umum Negara";
+}
+
+
+<p>
+    @Html.ActionLink("Create New", "CreateCategories", null, new { @class = "btn btn-primary" })
+</p>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            @*<div class="card-header card-header-primary">
+                    <h4 class="card-title">@ViewBag.Title</h4>
+                </div>*@
+            <div class="card-body table-responsive">
+                <table class="display" id="basic-1">
+                    <thead>
+                        <tr>
+
+                            <th>
+                                Unit
+                            </th>
+                            <th>
+                                Nama Unit
+                            </th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.Name)
+                                </td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.LongName)
+                                </td>
+                                <td>
+                                    @Html.ActionLink("Edit", "EditCategories", new { id = item.ID }, new { @class = "btn btn-primary" })
+                                    @Html.ActionLink("Delete", "DeleteCategories", new { id = item.ID }, new { @class = "btn btn-danger" })
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

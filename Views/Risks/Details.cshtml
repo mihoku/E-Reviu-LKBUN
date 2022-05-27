@@ -1,0 +1,70 @@
+﻿@model IEnumerable<E_Reviu_LKBUN.Models.Risk>
+
+@{
+    ViewBag.Title = "Hasil Pengujian";
+    ViewBag.Title2 = "Risiko";
+    ViewBag.Subtitle = ViewBag.riskdescription;
+}
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                @*<div class="card-header card-header-info">
+                    <h4 class="card-title">@ViewBag.Title</h4>
+                </div>*@
+                <div class="card-body table-responsive">
+                    <table class="table" id="datatables">
+                        <tr>
+                            <th>
+                                @Html.DisplayNameFor(model => model.RiskCategory.category)
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.Tujuan)
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.Risiko)
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.Pengendalian)
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.Teknik)
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.Atribut)
+                            </th>
+                            <th>Keterangan</th>
+                        </tr>
+
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.RiskCategory.category)
+                                </td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.Tujuan)
+                                </td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.Risiko)
+                                </td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.Pengendalian)
+                                </td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.Teknik)
+                                </td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.Atribut)
+                                </td>
+                                <td>
+                                    
+                                </td>
+                            </tr>
+                        }
+
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>

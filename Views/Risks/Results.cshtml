@@ -1,0 +1,133 @@
+﻿@model E_Reviu_LKBUN.Models.RiskCategory
+
+@{
+    ViewBag.Title = "View";
+    ViewBag.Title2 = "Risks";
+    
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card shadow-0 border">
+            <div class="card-header bg-info ">
+                <h5>@Model.category</h5>
+            </div>
+            <div class="card-body">
+                <h6>Risiko-risiko terkait @Model.category </h6><br />
+
+                <a href="@Url.Action("AddRisk", new { id=Model.ID })" class="btn btn-primary"><i class="icofont icofont-plus-square"></i> Tambah Risiko Baru</a>
+
+                <a href="@Url.Action("SelectRisk", new { id=Model.ID })" class="btn btn-primary"><i class="icofont icofont-library"></i> Tambah Risiko Baru dari Register (RCM)</a>
+
+                <br /><br />
+
+                      <div class="default-according style-1" id="accordionoc">
+
+
+
+                          @foreach (var item2 in Model.Risk)
+                          {
+                              var min = item2.UniverseRisk.OrderBy(y => y.ID).First().ID; 
+                              foreach (var item in item2.UniverseRisk.OrderBy(y => y.ID))
+                              {
+                                  if (item.ID == min)
+                                  {
+                                      <div class="card shadow-0 border b-r-0">
+                                          <div class="card-header b-r-0">
+                                              <h5>
+                                                  <button class="btn btn-link" data-toggle="collapse" data-target="#collapseicon-@item.ID" aria-expanded="true" aria-controls="collapse11"><i class="icofont icofont-tasks-alt"></i> <span class="badge badge-danger">Risiko @item.Risk.Code (Ref: @item.Risk.Reference)</span> @item.Risk.Risiko </button>
+                                              </h5>
+                                          </div>
+                                          <div class="collapse show" id="collapseicon-@item.ID" aria-labelledby="collapseicon-@item.ID" data-parent="#accordionoc" style="">
+                                              <div class="card-body">
+                                                  <div class="row">
+                                                      <div class="col-sm-3 col-xs-12">
+                                                          <div class="nav flex-column nav-pills nav-info" id="v-pills-tab-@item.ID" role="tablist" aria-orientation="vertical">
+                                                              <a class="nav-link" id="v-pills-pengendalian-tab-@item.ID" data-toggle="pill" href="#v-pills-pengendalian-@item.ID" role="tab" aria-controls="v-pills-pengendalian-@item.ID" aria-selected="false"><i class="icofont icofont-clip"></i>Pengendalian</a>
+                                                              <a class="nav-link active show" id="v-pills-tujuan-tab-@item.ID" data-toggle="pill" href="#v-pills-tujuan-@item.ID" role="tab" aria-controls="v-pills-tujuan-@item.ID" aria-selected="true"><i class="icofont icofont-list"></i>Tujuan Pengujian</a>
+                                                              <a class="nav-link" id="v-pills-teknik-tab-@item.ID" data-toggle="pill" href="#v-pills-teknik-@item.ID" role="tab" aria-controls="v-pills-teknik-@item.ID" aria-selected="false"><i class="icofont icofont-files"></i>Teknik Pengujian</a>
+                                                              <a class="nav-link" id="v-pills-atribut-tab-@item.ID" data-toggle="pill" href="#v-pills-atribut-@item.ID" role="tab" aria-controls="v-pills-atribut-@item.ID" aria-selected="false"><i class="icofont icofont-ui-tag"></i>Atribut Pengujian</a>
+                                                              <a class="nav-link" id="v-pills-script-tab-@item.ID" data-toggle="pill" href="#v-pills-script-@item.ID" role="tab" aria-controls="v-pills-script-@item.ID" aria-selected="false"><i class="icofont icofont-code-alt"></i>Script</a>
+                                                          </div>
+                                                      </div>
+                                                      <div class="col-sm-9 col-xs-12">
+                                                          <div class="tab-content" id="v-pills-tabContent-@item.ID">
+                                                              <div class="tab-pane fade" id="v-pills-pengendalian-@item.ID" role="tabpanel" aria-labelledby="v-pills-pengendalian-tab-@item.ID">
+                                                                  <p>@item.Risk.Pengendalian</p>
+                                                              </div>
+                                                              <div class="tab-pane fade active show" id="v-pills-tujuan-@item.ID" role="tabpanel" aria-labelledby="v-pills-tujuan-tab-@item.ID">
+                                                                  <p>@item.Risk.Tujuan</p>
+                                                              </div>
+                                                              <div class="tab-pane fade" id="v-pills-teknik-@item.ID" role="tabpanel" aria-labelledby="v-pills-teknik-tab-@item.ID">
+                                                                  <p>@item.Risk.Teknik</p>
+                                                              </div>
+                                                              <div class="tab-pane fade" id="v-pills-atribut-@item.ID" role="tabpanel" aria-labelledby="v-pills-atribut-tab-@item.ID">
+                                                                  <p>@item.Risk.Atribut</p>
+                                                              </div>
+                                                              <div class="tab-pane fade" id="v-pills-script-@item.ID" role="tabpanel" aria-labelledby="v-pills-script-tab-@item.ID">
+                                                                  <a href="@Url.Action("ModifyScript", new { id=item.ID })" class="btn btn-primary">Modify Script</a>
+                                                                  <pre class="helper-classes" style="max-height:300px; overflow-y:scroll">@item.Script</pre>
+                                                              </div>
+                                                          </div>
+                                                      </div>
+                                                  </div>
+                                              </div>
+                                          </div>
+                                      </div>
+                                  }
+                                  else
+                                  {
+                                      <div class="card shadow-0 border b-r-0">
+                                          <div class="card-header b-r-0">
+                                              <h5>
+                                                  <button class="btn btn-link" data-toggle="collapse" data-target="#collapseicon-@item.ID" aria-expanded="false" aria-controls="collapse11"><i class="icofont icofont-tasks-alt"></i> <span class="badge badge-danger">Risiko @item.Risk.Code (Ref: @item.Risk.Reference)</span> @item.Risk.Risiko </button>
+                                              </h5>
+                                          </div>
+                                          <div class="collapse" id="collapseicon-@item.ID" aria-labelledby="collapseicon-@item.ID" data-parent="#accordionoc" style="">
+                                              <div class="card-body">
+
+                                                  <div class="row">
+                                                      <div class="col-sm-3 col-xs-12">
+                                                          <div class="nav flex-column nav-pills nav-info" id="v-pills-tab-@item.ID" role="tablist" aria-orientation="vertical">
+                                                              <a class="nav-link" id="v-pills-pengendalian-tab-@item.ID" data-toggle="pill" href="#v-pills-pengendalian-@item.ID" role="tab" aria-controls="v-pills-pengendalian-@item.ID" aria-selected="false"><i class="icofont icofont-clip"></i>Pengendalian</a>
+                                                              <a class="nav-link active show" id="v-pills-tujuan-tab-@item.ID" data-toggle="pill" href="#v-pills-tujuan-@item.ID" role="tab" aria-controls="v-pills-tujuan-@item.ID" aria-selected="true"><i class="icofont icofont-list"></i>Tujuan Pengujian</a>
+                                                              <a class="nav-link" id="v-pills-teknik-tab-@item.ID" data-toggle="pill" href="#v-pills-teknik-@item.ID" role="tab" aria-controls="v-pills-teknik-@item.ID" aria-selected="false"><i class="icofont icofont-files"></i>Teknik Pengujian</a>
+                                                              <a class="nav-link" id="v-pills-atribut-tab-@item.ID" data-toggle="pill" href="#v-pills-atribut-@item.ID" role="tab" aria-controls="v-pills-atribut-@item.ID" aria-selected="false"><i class="icofont icofont-ui-tag"></i>Atribut Pengujian</a>
+                                                              <a class="nav-link" id="v-pills-script-tab-@item.ID" data-toggle="pill" href="#v-pills-script-@item.ID" role="tab" aria-controls="v-pills-script-@item.ID" aria-selected="false"><i class="icofont icofont-code-alt"></i>Script</a>
+                                                          </div>
+                                                      </div>
+                                                      <div class="col-sm-9 col-xs-12">
+                                                          <div class="tab-content" id="v-pills-tabContent-@item.ID">
+                                                              <div class="tab-pane fade" id="v-pills-pengendalian-@item.ID" role="tabpanel" aria-labelledby="v-pills-pengendalian-tab-@item.ID">
+                                                                  <p>@item.Risk.Pengendalian</p>
+                                                              </div>
+                                                              <div class="tab-pane fade active show" id="v-pills-tujuan-@item.ID" role="tabpanel" aria-labelledby="v-pills-tujuan-tab-@item.ID">
+                                                                  <p>@item.Risk.Tujuan</p>
+                                                              </div>
+                                                              <div class="tab-pane fade" id="v-pills-teknik-@item.ID" role="tabpanel" aria-labelledby="v-pills-teknik-tab-@item.ID">
+                                                                  <p>@item.Risk.Teknik</p>
+                                                              </div>
+                                                              <div class="tab-pane fade" id="v-pills-atribut-@item.ID" role="tabpanel" aria-labelledby="v-pills-atribut-tab-@item.ID">
+                                                                  <p>@item.Risk.Atribut</p>
+                                                              </div>
+                                                              <div class="tab-pane fade" id="v-pills-script-@item.ID" role="tabpanel" aria-labelledby="v-pills-script-tab-@item.ID">
+                                                                  <a href="@Url.Action("ModifyScript", new { id=item.ID })" class="btn btn-primary">Modify Script</a>
+                                                                  <pre class="helper-classes" style="max-height:300px; overflow-y:scroll">@item.Script</pre>
+                                                              </div>
+                                                          </div>
+                                                      </div>
+                                                  </div>
+                                              </div>
+                                          </div>
+                                      </div>
+                                  }
+                              }
+                          }
+
+                      </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+

@@ -1,0 +1,61 @@
+﻿@model IEnumerable<E_Reviu_LKBUN.Models.Universe>
+
+@{
+    ViewBag.Title = "Universe";
+    ViewBag.Title2 = "BA BUN";
+}
+@if (ViewBag.parentID != 0)
+{
+    @Html.ActionLink("Create New", "Create", new { id=ViewBag.parentID }, new { @class = "btn btn-primary" }) <a href="@Url.Action("Index", new {id=ViewBag.grandparentID })" class="btn btn-info"><i class="pe-7s-back"></i> Back</a>
+}
+    else { }
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+
+            <div class="card-body table-responsive">
+                <table class="display" id="basic-1">
+                    <thead>
+                        <tr>
+                            @if (ViewBag.key != "unit")
+                            {
+                                <th></th>
+                            }
+                            <th>
+                                Kode
+                            </th>
+                            <th>
+                                Nama
+                            </th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                        <tr>
+                            @if (ViewBag.key != "unit")
+                            {
+                                <td>
+                                    <a href="@Url.Action("Index",new { id = item.ID })" class="btn btn-primary"><i class="pe-7s-plus"></i></a>
+                                </td>
+                            }
+                            <td>
+                                @item.Code
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.LongName) <span class="badge badge-info">@item.ShortName</span> <span class="badge badge-success">@item.Unit.Name</span>
+                            </td>
+                            <td style="white-space:nowrap">
+                                <a href="@Url.Action("Details",new { id = item.ID })" class="btn btn-xs btn-primary">View Risks <span class="badge bagde-pill badge-light">@item.UniverseRisk.Count()</span></a><br />
+                                <a href="@Url.Action("Edit",new { id = item.ID })" class="btn btn-xs btn-info" alt="Edit">Edit</a>
+                                <a href="@Url.Action("Delete",new { id = item.ID })" class="btn btn-xs btn-danger" alt="Delete">Delete</a>
+                            </td>
+                        </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

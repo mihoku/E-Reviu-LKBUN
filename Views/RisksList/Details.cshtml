@@ -1,0 +1,73 @@
+﻿@model E_Reviu_LKBUN.Models.Risk
+
+@{
+    ViewBag.Title = "Risk and Control";
+    ViewBag.Title2 = "Matrix";
+    ViewBag.Subtitle = "Risiko " + Model.Code;
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card shadow-0 border b-r-0">
+            <div class="card-header">
+                <h5 class="pull-left">Risiko @Model.Code (Ref: @Model.Reference)</h5>
+            </div>
+            <div class="card-body">
+                <div class="tabbed-card">
+                    <ul class="pull-right nav nav-tabs nav-material" id="top-tab" role="tablist">
+                        <li class="nav-item">
+                            <a class="nav-link active show" id="top-home-tab" data-toggle="tab" href="#tab-1" role="tab" aria-controls="tab-1" aria-selected="true">Deskripsi Risiko</a>
+                            <div class="material-border"></div>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="profile-top-tab" data-toggle="tab" href="#tab-2" role="tab" aria-controls="tab-2" aria-selected="false">Pengendalian</a>
+                            <div class="material-border"></div>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="contact-top-tab" data-toggle="tab" href="#tab-3" role="tab" aria-controls="tab-3" aria-selected="false">Detail Pengujian</a>
+                            <div class="material-border"></div>
+                        </li>
+                    </ul>
+                    <div class="tab-content" id="top-tabContent">
+                        <div class="tab-pane fade active show" id="tab-1" role="tabpanel" aria-labelledby="top-home-tab">
+                            <span class="badge badge-primary">Kategori: @Model.RiskCategory.category</span> <span class="badge badge-info">Proses Bisnis @Model.Module.ModuleName</span>
+                            <p>@Model.Risiko</p>
+                        </div>
+                        <div class="tab-pane fade" id="tab-2" role="tabpanel" aria-labelledby="profile-top-tab">
+                            <p>@Model.Pengendalian</p>
+                        </div>
+                        <div class="tab-pane fade" id="tab-3" role="tabpanel" aria-labelledby="contact-top-tab">
+                            <div class="row">
+                                <div class="col-sm-3 tabs-responsive-side">
+                                    <div class="nav flex-column nav-pills nav-material nav-left" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+                                    <a class="nav-link active" id="v-pills-home-tab" data-toggle="pill" href="#v-pills-home" role="tab" aria-controls="v-pills-home" aria-selected="true">Tujuan</a>
+                                    <a class="nav-link" id="v-pills-profile-tab" data-toggle="pill" href="#v-pills-profile" role="tab" aria-controls="v-pills-profile" aria-selected="false">Teknik</a>
+                                    <a class="nav-link" id="v-pills-messages-tab" data-toggle="pill" href="#v-pills-messages" role="tab" aria-controls="v-pills-messages" aria-selected="false">Atribut</a>
+                                    </div>
+                                </div>
+                                <div class="col-sm-9">
+                                    <div class="tab-content" id="v-pills-tabContent">
+                                        <div class="tab-pane fade show active" id="v-pills-home" role="tabpanel" aria-labelledby="v-pills-home-tab">
+                                            <p>@Model.Tujuan</p>
+                                        </div>
+                                        <div class="tab-pane fade" id="v-pills-profile" role="tabpanel" aria-labelledby="v-pills-profile-tab">
+                                            <p>@Model.Teknik</p>
+                                        </div>
+                                        <div class="tab-pane fade" id="v-pills-messages" role="tabpanel" aria-labelledby="v-pills-messages-tab">
+                                            <p>@Model.Atribut</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<p>
+    @Html.ActionLink("Edit", "Edit", new { id = Model.ID }) |
+    @Html.ActionLink("Back to List", "Index")
+</p>

@@ -1,0 +1,38 @@
+﻿
+@{
+    ViewBag.Title = "Settings";
+}
+
+    <div class="row">
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-header card-header-primary">
+                    <h4 class="card-title">Unit Pelaporan</h4>
+                </div>
+                <div class="card-body table-responsive">
+                    <a href="@Url.Action("Index","Units",null)"><img src="~/assets/img/unit.png" width="100%" /></a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-header card-header-primary">
+                    <h4 class="card-title">Kategori Risiko</h4>
+                </div>
+                <div class="card-body table-responsive">
+                    <a href="@Url.Action("Categories","Risks",null)"><img src="~/assets/img/riskcategory.png" width="100%" /></a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-header card-header-primary">
+                    <h4 class="card-title">Risk and Control Matrix</h4>
+                </div>
+                <div class="card-body table-responsive">
+                    <a href="@Url.Action("Index","RisksList",null)"><img src="~/assets/img/rcm.png" width="100%" /></a>
+                </div>
+            </div>
+        </div>
+    </div>
+

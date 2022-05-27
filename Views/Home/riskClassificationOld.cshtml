@@ -1,0 +1,25 @@
+﻿@model IEnumerable<E_Reviu_LKBUN.Models.RiskCategory>
+
+@foreach (var item in Model)
+{
+    if (ViewBag.controllerName == "Risks" && ViewBag.actionName == "Details" && ViewBag.risktype==item.abbreviation)
+    {
+        <li class="nav-item active">
+            <a class="nav-link" href="@Url.Action("Details", "Risks", new { id = item.abbreviation })">
+                <span class="sidebar-mini"> @item.abbreviation </span>
+                <span class="sidebar-normal">@Html.DisplayFor(modelItem => item.category)</span>
+            </a>
+        </li>
+    }
+
+    else
+    {
+        <li class="nav-item">
+            <a class="nav-link" href="@Url.Action("Details", "Risks", new { id = item.abbreviation })">
+                <span class="sidebar-mini"> @item.abbreviation </span>
+                <span class="sidebar-normal">@Html.DisplayFor(modelItem => item.category)</span>
+            </a>
+        </li>
+    }
+}
+

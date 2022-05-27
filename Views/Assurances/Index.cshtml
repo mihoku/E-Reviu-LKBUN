@@ -1,0 +1,55 @@
+﻿@model IEnumerable<E_Reviu_LKBUN.Models.Assurance>
+
+@{
+    ViewBag.Title = "Riwayat";
+    ViewBag.Title2 = "Hasil Reviu LKBUN";
+}
+
+
+<p>
+    @Html.ActionLink("Buat Penugasan", "Add",null, new { @class = "btn btn-sm btn-info" })
+</p>
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+
+            <div class="card-body table-responsive">
+                <table class="display" id="basic-1">
+                    <thead>
+                        <tr>
+                            <th>
+                                Tahun
+                            </th>
+                            <th>
+                                BA BUN
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.ST)
+                            </th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>
+                                    @item.ErekonReportYear
+                                </td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.Universe.ShortName)
+                                </td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.ST) <span class="badge badge-info">@item.SPANReportPeriod </span> <span class="badge badge-danger"> Anomali: @{Html.RenderAction("AnomalyCounterPerProject", new { id = item.ID});} </span>
+                                </td>
+                                <td>
+                                    <a href="@Url.Action("Preview",new { id = item.ID })" class="btn btn-sm btn-info">Details @*<span class="badge bagde-pill badge-light">@item.Universe.UniverseRisk.Count()</span>*@</a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,62 @@
+﻿@model IEnumerable<E_Reviu_LKBUN.Models.Risk>
+
+@{
+    ViewBag.Title = "Risk and Control"; 
+    ViewBag.Title2 = "Matrix";
+}
+
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card shadow-0 border b-r-0">
+            @*<div class="card-header card-header-info">
+        <h4 class="card-title">@ViewBag.Title</h4>
+
+        </div>*@
+            <div class="card-body table-responsive">
+                <p>
+                    @Html.ActionLink("Create New", "Create", null, new { @class = "btn btn-info" })
+                </p>
+                <table class="display" id="basic-1">
+                    <thead>
+                        <tr>
+                            <th>
+                                @Html.DisplayNameFor(model => model.Code)
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.Reference)
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.Risiko)
+                            </th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+
+                        <tr>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.Code)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.Reference)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.Risiko) <span class="badge badge-primary">@item.RiskCategory.category</span> <span class="badge badge-info">@item.Module.ModuleName</span>
+                            </td>
+                            <td style="white-space:nowrap">
+                                @Html.ActionLink("Details", "Details", new { id = item.ID }, new { @class = "btn btn-sm btn-primary" })
+                                @Html.ActionLink("Edit", "Edit", new { id = item.ID }, new { @class = "btn btn-sm btn-info" }) 
+                                @Html.ActionLink("Delete", "Delete", new { id = item.ID }, new { @class = "btn btn-sm btn-danger" })
+                            </td>
+                        </tr>
+
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

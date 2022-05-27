@@ -1,0 +1,51 @@
+﻿@model IEnumerable<E_Reviu_LKBUN.Models.OutputColumnList>
+
+@{
+    ViewBag.Title = "Index";
+}
+
+<h2>Index</h2>
+
+<p>
+    @Html.ActionLink("Create New", "Create")
+</p>
+<table class="table">
+    <tr>
+        <th>
+            @Html.DisplayNameFor(model => model.UniverseRisk.Script)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.ColumnName)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.isValueColumn)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.isAnomalyIdentifier)
+        </th>
+        <th></th>
+    </tr>
+
+@foreach (var item in Model) {
+    <tr>
+        <td>
+            @Html.DisplayFor(modelItem => item.UniverseRisk.Script)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.ColumnName)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.isValueColumn)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.isAnomalyIdentifier)
+        </td>
+        <td>
+            @Html.ActionLink("Edit", "Edit", new { id=item.ID }) |
+            @Html.ActionLink("Details", "Details", new { id=item.ID }) |
+            @Html.ActionLink("Delete", "Delete", new { id=item.ID })
+        </td>
+    </tr>
+}
+
+</table>

@@ -1,0 +1,82 @@
+﻿@model IEnumerable<E_Reviu_LKBUN.Models.OutputColumnList>
+
+
+@if (Model.Count() == 1)
+{
+    var counter = 1;
+    foreach (var item in Model.OrderBy(y => y.ColumnName))
+    {
+        var columnAlias = "Identifier" + counter.ToString();
+        <p>CAST(@item.ColumnName AS VARCHAR(100)) @columnAlias, '' Identifier2, '' Identifier3, '' Identifier4, '' Identifier5, '' Identifier6, '' Identifier7, </p>
+        counter += 1;
+    }
+}
+else if (Model.Count() == 2)
+{
+    var counter = 1;
+    foreach (var item in Model.OrderBy(y => y.ColumnName))
+    {
+        var columnAlias = "Identifier" + counter.ToString();
+<p>CAST(@item.ColumnName AS VARCHAR(100)) @columnAlias,  </p>
+        counter += 1;
+    }
+    <p>'' Identifier3, '' Identifier4, '' Identifier5, '' Identifier6, '' Identifier7, </p>
+}
+else if (Model.Count() == 3)
+{
+    var counter = 1;
+    foreach (var item in Model.OrderBy(y => y.ColumnName))
+    {
+        var columnAlias = "Identifier" + counter.ToString();
+<p>CAST(@item.ColumnName AS VARCHAR(100)) @columnAlias,  </p>
+        counter += 1;
+    }
+    <p>'' Identifier4, '' Identifier5, '' Identifier6, '' Identifier7, </p>
+}
+
+else if (Model.Count() == 4)
+{
+    var counter = 1;
+    foreach (var item in Model.OrderBy(y => y.ColumnName))
+    {
+        var columnAlias = "Identifier" + counter.ToString();
+<p>CAST(@item.ColumnName AS VARCHAR(100)) @columnAlias,  </p>
+        counter += 1;
+    }
+    <p>'' Identifier5, '' Identifier6, '' Identifier7, </p>
+}
+
+else if (Model.Count() == 5)
+{
+    var counter = 1;
+    foreach (var item in Model.OrderBy(y => y.ColumnName))
+    {
+        var columnAlias = "Identifier" + counter.ToString();
+<p>CAST(@item.ColumnName AS VARCHAR(100)) @columnAlias,  </p>
+        counter += 1;
+    }
+    <p>'' Identifier6, '' Identifier7, </p>
+}
+
+else if (Model.Count() == 6)
+{
+    var counter = 1;
+    foreach (var item in Model.OrderBy(y => y.ColumnName))
+    {
+        var columnAlias = "Identifier" + counter.ToString();
+<p>CAST(@item.ColumnName AS VARCHAR(100)) @columnAlias,  </p>
+        counter += 1;
+    }
+    <p>'' Identifier7, </p>
+}
+
+else
+{
+    var counter = 1;
+    foreach (var item in Model.OrderBy(y => y.ColumnName))
+    {
+        var columnAlias = "Identifier" + counter.ToString();
+        <p>ISNULL(@item.ColumnName ,0) @columnAlias,  </p>
+        counter += 1;
+    }
+}

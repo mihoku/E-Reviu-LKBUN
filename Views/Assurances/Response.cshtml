@@ -1,0 +1,97 @@
+﻿@model IEnumerable<E_Reviu_LKBUN.Models.UniverseDetails>
+
+@{
+    ViewBag.Title = "Tanggapan";
+    ViewBag.Title2 = "Hasil Pengujian";
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card shadow-0 border">
+            <div class="card-header bg-info ">
+                <h5>Tanggapan @ViewBag.Subtitle</h5>
+            </div>
+            <div class="card-body">
+                @Html.ActionLink("Kembali ke Hasil Pengujian", "Preview", new { id = ViewBag.AssuranceID }, new { @class = "btn btn-sm btn-info" })<br /><br />
+                <div class="default-according style-1" id="accordionoc">
+
+                    @if (Model.Count() != 0)
+                    {
+
+
+                        var min = Model.OrderBy(y => y.ID).First().ID;
+
+
+                        foreach (var item in Model.OrderBy(y => y.ID))
+                        {
+                            if (item.ID == min)
+                            {
+                                <div class="card shadow-0 border b-r-0">
+                                    <div class="card-header b-r-0">
+                                        <h5>
+                                            <button class="btn btn-link" data-toggle="collapse" data-target="#collapseicon-@item.ID" aria-expanded="true" aria-controls="collapse11"><i class="icofont icofont-tasks-alt"></i>  @item.Area </button>
+                                        </h5>
+                                    </div>
+                                    <div class="collapse show" id="collapseicon-@item.ID" aria-labelledby="collapseicon-@item.ID" data-parent="#accordionoc" style="">
+                                        <div class="card-body">
+                                            @if (item.Responses.Where(y => y.AssuranceID == ViewBag.AssuranceID).Count() == 0)
+                                            {
+                                                <a href="@Url.Action("ResponseAdd",new { id=ViewBag.AssuranceID, area=item.ID})" class="btn btn-md btn-primary">Edit Tanggapan</a>
+                                            }
+                                            else
+                                            {
+                                                foreach (var resp in item.Responses.Where(y => y.AssuranceID == ViewBag.AssuranceID))
+                                                {
+                                                    @Html.Raw(resp.Content)
+                                                    <br />
+                                                    <a href="@Url.Action("ResponseEdit",new { id=resp.ID})" class="btn btn-md btn-primary">Edit Tanggapan</a>
+                                                }
+
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="card shadow-0 border b-r-0">
+                                    <div class="card-header b-r-0">
+                                        <h5>
+                                            <button class="btn btn-link" data-toggle="collapse" data-target="#collapseicon-@item.ID" aria-expanded="false" aria-controls="collapse11"><i class="icofont icofont-tasks-alt"></i> @item.Area </button>
+                                        </h5>
+                                    </div>
+                                    <div class="collapse" id="collapseicon-@item.ID" aria-labelledby="collapseicon-@item.ID" data-parent="#accordionoc" style="">
+                                        <div class="card-body">
+                                            @if (item.Responses.Where(y => y.AssuranceID == ViewBag.AssuranceID).Count() == 0)
+                                            {
+                                                <a href="@Url.Action("ResponseAdd",new { id=ViewBag.AssuranceID, area=item.ID})" class="btn btn-md btn-primary">Edit Tanggapan</a>
+                                            }
+                                            else
+                                            {
+                                                foreach (var resp in item.Responses.Where(y => y.AssuranceID == ViewBag.AssuranceID))
+                                                {
+                                                    @Html.Raw(resp.Content)
+                                                    <br />
+                                                    <a href="@Url.Action("ResponseEdit",new { id=resp.ID})" class="btn btn-md btn-primary">Edit Tanggapan</a>
+                                                }
+
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        }
+                    }
+                    else
+                    {
+                        <br /><br /><center>Belum ada area yang teridentifikasi</center>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<p>
+    
+</p>

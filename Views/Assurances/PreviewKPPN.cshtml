@@ -1,0 +1,975 @@
+﻿@model E_Reviu_LKBUN.Models.Assurance
+
+@{
+    ViewBag.Title = "Hasil Pengujian Rinci KPPN " + ViewBag.KPPN;
+    ViewBag.Title2 = Model.ST;
+    ViewBag.Subtitle = Model.Universe.ShortName;
+    var ReportName = "KPPN "+ ViewBag.KPPN +" "+ Model.SPANReportPeriod;
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card shadow-0 border b-r-0">
+            @*<div class="card-header card-header-info">
+                <h4 class="card-title">@ViewBag.Title</h4>
+
+                </div>*@
+            <div class="card-body table-responsive">
+                <button class="btn btn-md btn-success" onclick="javascript:downloadCHR('@ReportName')">Download Hasil Reviu</button> <a href="@Url.Action("Details",new { id=Model.ID})" class="btn btn-md btn-primary">Lihat Rincian Hasil Pengujian</a> <a href="@Url.Action("Preview", new { id=Model.ID })" class="btn btn-md btn-info">Lihat Hasil Analisis Keseluruhan</a><br /><br />
+                <div id="CHR">
+
+                    @if (Model.Universe.Code == "999.00.XX")
+                    {
+                        @*Kas di KPPN menggunakan RGL28 dan RGL 15*@
+                        var RekeningKPPN_Satker = Model.AssuranceResult.Where(y => y.RiskCode == "RGL15" && y.Identifier2 == ViewBag.KPPN).GroupBy(x => new { Identifier2 = x.Identifier2 }).Count();
+                        var Saldo_RekeningKPPN_Neraca = Model.AssuranceResult.Where(y => y.RiskCode == "RGL15" && y.Identifier2 == ViewBag.KPPN && y.ColumnName == "SALDO_NERACA").Sum(y => y.ColumnValue);
+                        var Saldo_RekeningKPPN_LedgerKas = Model.AssuranceResult.Where(y => y.RiskCode == "RGL15" && y.Identifier2 == ViewBag.KPPN && y.ColumnName == "SALDO_TRIAL_BALANCE").Sum(y => y.ColumnValue);
+                        var Saldo_RekeningKPPN_LedgerAkrual = Model.AssuranceResult.Where(y => y.RiskCode == "RGL28" && y.Identifier2 == ViewBag.KPPN && y.ColumnName == "AMOUNT_ACCRUAL").Sum(y => y.ColumnValue);
+                        var Saldo_RekeningKPPN_NeracaLedger_Selisih = Model.AssuranceResult.Where(y => y.RiskCode == "RGL15" && y.Identifier2 == ViewBag.KPPN && y.ColumnName == "SELISIH").Sum(y => y.ColumnValue);
+                        var Saldo_RekeningKPPN_AkrualKas_List = Model.AssuranceResult.Where(y => y.RiskCode == "RGL28" && y.Identifier2 == ViewBag.KPPN);
+                        var Saldo_RekeningKPPN_AkrualKas_Selisih = Model.AssuranceResult.Where(y => y.RiskCode == "RGL28" && y.Identifier2 == ViewBag.KPPN && y.ColumnName == "SELISIH").Sum(y => y.ColumnValue);
+                        var groupedData_RekeningKPPN_Neraca_Ledger_Selisih = Model.AssuranceResult.Where(y => y.RiskCode == "RGL15" && y.Identifier2 == ViewBag.KPPN && y.ColumnName == "SELISIH" && y.ColumnValue != 0).GroupBy(x => new { Identifier2 = x.Identifier2 });
+                        var groupedData_RekeningKPPN_Akrual_Kas_Selisih = Model.AssuranceResult.Where(y => y.RiskCode == "RGL28" && y.Identifier2 == ViewBag.KPPN && y.ColumnName == "SELISIH" && y.ColumnValue != 0).GroupBy(x => new { Identifier2 = x.Identifier2 });
+
+
+                        @*Olah Data Saldo Kas BLU*@
+                        @*Informasi umum satker BLU*@
+                        var SatkerBLU = Model.AssuranceResult.Where(y => y.RiskCode == "RGL02" && y.Identifier2 == ViewBag.KPPN).GroupBy(y => y.Identifier5).Count();
+                        var KPPNSatkerBLU = Model.AssuranceResult.Where(y => y.RiskCode == "RGL02" && y.Identifier2 == ViewBag.KPPN).GroupBy(y => y.Identifier2).Count();
+                        var groupedData_ERekon_SPAN_Satker_Selisih_BLU = Model.AssuranceResult.Where(y => y.RiskCode == "RGL02" && y.Identifier2 == ViewBag.KPPN && (y.ColumnName == "SALDO_KAS_BLU" || y.ColumnName == "KASBLU_SAI" || y.ColumnName == "KASBLU_SIAP" || y.ColumnName == "SELISIH_SIAP_SAI"))
+                        .GroupBy(x => new { Identifier2 = x.Identifier2, Identifier5 = x.Identifier5, Identifier1 = x.Identifier1 })
+                        .Where(x => x.OrderBy(y => y.ColumnName).Last().ColumnValue != 0 //Selisih SIAP SAI
+                                      || x.OrderBy(y => y.ColumnName).Skip(2).First().ColumnValue - x.OrderBy(y => y.ColumnName).Skip(1).First().ColumnValue != 0 //Selisih SPAN dengan E-Rekon SIAP
+                                      || x.OrderBy(y => y.ColumnName).Skip(2).First().ColumnValue - x.OrderBy(y => y.ColumnName).First().ColumnValue != 0); //Selisih SPAN dengan E-Rekon SAI
+
+                        @*Saldo BLU Neraca KPPN dan LAK Face*@
+                        var SaldoBLU_NeracaKPPN = Model.AssuranceResult.Where(y => y.RiskCode == "RGL02" && y.Identifier2 == ViewBag.KPPN && y.ColumnName == "SALDO_KAS_BLU").Sum(y => y.ColumnValue);
+                        var SaldoBLU_LAKFace = Model.AssuranceResult.Where(y => y.RiskCode == "RGL02" && y.Identifier2 == ViewBag.KPPN && y.ColumnName == "SALDO_KAS_LAK").Sum(y => y.ColumnValue);
+                        var SaldoBLU_NeracaKPPN_LAKFace_Selisih = Model.AssuranceResult.Where(y => y.RiskCode == "RGL02" && y.Identifier2 == ViewBag.KPPN && y.ColumnName == "SELISIH_SALDO_KAS_LAK_BLU").Sum(y => y.ColumnValue);
+                        var SatkerBLU_NeracaKPPN_LAKFace_Selisih = Model.AssuranceResult.Where(y => y.RiskCode == "RGL02" && y.Identifier2 == ViewBag.KPPN && y.ColumnName == "SELISIH_SALDO_KAS_LAK_BLU" && y.ColumnValue != 0).GroupBy(y => y.Identifier5).Count();
+                        var KPPNSatkerBLU_NeracaKPPN_LAKFace_Selisih = Model.AssuranceResult.Where(y => y.RiskCode == "RGL02" && y.Identifier2 == ViewBag.KPPN && y.ColumnName == "SELISIH_SALDO_KAS_LAK_BLU" && y.ColumnValue != 0).GroupBy(y => y.Identifier2).Count();
+                        @*Saldo BLU ERekon dan SPAN*@
+                        var SaldoBLU_ERekon_SAI = Model.AssuranceResult.Where(y => y.RiskCode == "RGL02" && y.Identifier2 == ViewBag.KPPN && y.ColumnName == "KASBLU_SAI").Sum(y => y.ColumnValue);
+                        var SaldoBLU_ERekon_SIAP = Model.AssuranceResult.Where(y => y.RiskCode == "RGL02" && y.Identifier2 == ViewBag.KPPN && y.ColumnName == "KASBLU_SIAP").Sum(y => y.ColumnValue);
+                        var SaldoBLU_ERekon_SIAP_SAI_Selisih = Model.AssuranceResult.Where(y => y.RiskCode == "RGL02" && y.Identifier2 == ViewBag.KPPN && y.ColumnName == "SELISIH_SIAP_SAI").Sum(y => y.ColumnValue);
+                        var SatkerBLU_ERekon_SIAP_SAI_Selisih = Model.AssuranceResult.Where(y => (y.RiskCode == "RGL02" && y.Identifier2 == ViewBag.KPPN && y.ColumnName == "SELISIH_SIAP_SAI" && y.ColumnValue != 0)).GroupBy(y => y.Identifier5).Count();
+                        var KPPNSatkerBLU_ERekon_SIAP_SAI_Selisih = Model.AssuranceResult.Where(y => y.RiskCode == "RGL02" && y.Identifier2 == ViewBag.KPPN && y.ColumnName == "SELISIH_SIAP_SAI" && y.ColumnValue != 0).GroupBy(y => y.Identifier2).Count();
+                        var SaldoBLU_Selisih_ERekon_SAI_SPAN = SaldoBLU_ERekon_SAI - SaldoBLU_NeracaKPPN;
+                        var SaldoBLU_Selisih_ERekon_SIAP_SPAN = SaldoBLU_ERekon_SIAP - SaldoBLU_NeracaKPPN;
+                    var SaldoBLU_SPAN_Minus = Model.AssuranceResult.Where(y => (y.RiskCode == "RGL02" && y.Identifier2 == ViewBag.KPPN && y.ColumnName == "SALDO_KAS_LAK" && y.ColumnValue < 0) || (y.RiskCode == "RGL02" && y.ColumnName == "SALDO_KAS_BLU" && y.Identifier2 == ViewBag.KPPN && y.ColumnValue < 0))
+                            .GroupBy(y => new { Identifier4 = y.Identifier4 });
+                        @*Saldo BLU Ledger kas dan ledger akrual*@
+                        var SaldoBLUKas = Model.AssuranceResult.Where(y => y.RiskCode == "RGL31" && y.Identifier2 == ViewBag.KPPN && y.ColumnName == "AMOUNT_CASH").Sum(y => y.ColumnValue);
+                        var SaldoBLUAkrual = Model.AssuranceResult.Where(y => y.RiskCode == "RGL31" && y.Identifier2 == ViewBag.KPPN && y.ColumnName == "AMOUNT_ACCRUAL").Sum(y => y.ColumnValue);
+                        var SaldoBLU_Akrual_Kas_Selisih = Model.AssuranceResult.Where(y => y.RiskCode == "RGL31" && y.Identifier2 == ViewBag.KPPN && y.ColumnName == "SELISIH").Sum(y => y.ColumnValue);
+                        var SatkerBLU_Akrual_Kas_Selisih = Model.AssuranceResult.Where(y => y.RiskCode == "RGL31" && y.Identifier2 == ViewBag.KPPN && y.ColumnName == "SELISIH" && y.ColumnValue != 0).GroupBy(y => y.Identifier1).Count();
+                        var KPPNSatkerBLU_Akrual_Kas_Selisih = Model.AssuranceResult.Where(y => y.RiskCode == "RGL31" && y.Identifier2 == ViewBag.KPPN && y.ColumnName == "SELISIH" && y.ColumnValue != 0).GroupBy(y => y.Identifier2).Count();
+
+                        @*Olah Data Saldo Kas Hibah*@
+                        @*Informasi Umum Satker Kas Hibah*@
+                        var SatkerHibah = Model.AssuranceResult.Where(y => y.RiskCode == "RGL03" && y.Identifier2 == ViewBag.KPPN).GroupBy(y => y.Identifier5).Count();
+                        var KPPNSatkerHibah = Model.AssuranceResult.Where(y => y.RiskCode == "RGL03" && y.Identifier2 == ViewBag.KPPN).GroupBy(y => y.Identifier2).Count();
+                        var groupedData_ERekon_SPAN_Satker_Selisih_Hibah = Model.AssuranceResult.Where(y => y.RiskCode == "RGL03" && y.Identifier2 == ViewBag.KPPN && (y.ColumnName == "SALDO_KAS_KEMENTRIAN" || y.ColumnName == "SAI" || y.ColumnName == "SIAP" || y.ColumnName == "SELISIH_SIAP_SAI"))
+                      .GroupBy(x => new { Identifier2 = x.Identifier2, Identifier5 = x.Identifier5, Identifier1 = x.Identifier1 })
+                      .Where(x => x.OrderBy(y => y.ColumnName).Skip(2).First().ColumnValue != 0 //selisih SIAP SAI
+                                    || x.OrderBy(y => y.ColumnName).Skip(1).First().ColumnValue - x.OrderBy(y => y.ColumnName).Last().ColumnValue != 0 //Selisih SPAN dengan E-Rekon SIAP
+                                    || x.OrderBy(y => y.ColumnName).Skip(1).First().ColumnValue - x.OrderBy(y => y.ColumnName).First().ColumnValue != 0); //Selisih SPAN dengan E-Rekon SAI
+
+                        @*Saldo Hibah Neraca KPPN dan LAK Face*@
+                        var SaldoHibah_NeracaKPPN = Model.AssuranceResult.Where(y => y.RiskCode == "RGL03" && y.Identifier2 == ViewBag.KPPN && y.ColumnName == "SALDO_KAS_KEMENTRIAN").Sum(y => y.ColumnValue);
+                        var SaldoHibah_LAKFace = Model.AssuranceResult.Where(y => y.RiskCode == "RGL03" && y.Identifier2 == ViewBag.KPPN && y.ColumnName == "SALDO_KAS_LAK").Sum(y => y.ColumnValue);
+                        var SaldoHibah_NeracaKPPN_LAKFace_Selisih = Model.AssuranceResult.Where(y => y.RiskCode == "RGL03" && y.Identifier2 == ViewBag.KPPN && y.ColumnName == "SELISIH_SALDO_KAS_LAK_KEMENTRIAN").Sum(y => y.ColumnValue);
+                        var SatkerHibah_NeracaKPPN_LAKFace_Selisih = Model.AssuranceResult.Where(y => y.RiskCode == "RGL03" && y.Identifier2 == ViewBag.KPPN && y.ColumnName == "SELISIH_SALDO_KAS_LAK_KEMENTRIAN" && y.ColumnValue != 0).GroupBy(y => y.Identifier5).Count();
+                        var KPPNSatkerHibah_NeracaKPPN_LAKFace_Selisih = Model.AssuranceResult.Where(y => y.RiskCode == "RGL03" && y.Identifier2 == ViewBag.KPPN && y.ColumnName == "SELISIH_SALDO_KAS_LAK_KEMENTRIAN" && y.ColumnValue != 0).GroupBy(y => y.Identifier2).Count();
+
+                        @*Saldo Hibah ERekon dan SPAN*@
+                        var SaldoHibah_ERekon_SAI = Model.AssuranceResult.Where(y => y.RiskCode == "RGL03" && y.Identifier2 == ViewBag.KPPN && y.ColumnName == "SAI").Sum(y => y.ColumnValue);
+                        var SaldoHibah_ERekon_SIAP = Model.AssuranceResult.Where(y => y.RiskCode == "RGL03" && y.Identifier2 == ViewBag.KPPN && y.ColumnName == "SIAP").Sum(y => y.ColumnValue);
+                        var SaldoHibah_ERekon_SIAP_SAI_Selisih = Model.AssuranceResult.Where(y => y.RiskCode == "RGL03" && y.Identifier2 == ViewBag.KPPN && y.ColumnName == "SELISIH_SIAP_SAI").Sum(y => y.ColumnValue);
+                        var SatkerHibah_ERekon_SIAP_SAI_Selisih = Model.AssuranceResult.Where(y => (y.RiskCode == "RGL03" && y.Identifier2 == ViewBag.KPPN && y.ColumnName == "SELISIH_SIAP_SAI" && y.ColumnValue != 0)).GroupBy(y => y.Identifier5).Count();
+                        var KPPNSatkerHibah_ERekon_SIAP_SAI_Selisih = Model.AssuranceResult.Where(y => y.RiskCode == "RGL03" && y.Identifier2 == ViewBag.KPPN && y.ColumnName == "SELISIH_SIAP_SAI" && y.ColumnValue != 0).GroupBy(y => y.Identifier2).Count();
+                        var SaldoHibah_Selisih_ERekon_SAI_SPAN = SaldoHibah_ERekon_SAI - SaldoHibah_NeracaKPPN;
+                        var SaldoHibah_Selisih_ERekon_SIAP_SPAN = SaldoHibah_ERekon_SIAP - SaldoHibah_NeracaKPPN;
+                    var SaldoHibah_SPAN_Minus = Model.AssuranceResult.Where(y => (y.RiskCode == "RGL03" && y.Identifier2 == ViewBag.KPPN && y.ColumnName == "SALDO_KAS_LAK" && y.ColumnValue < 0) || (y.RiskCode == "RGL03" && y.ColumnName == "SALDO_KAS_KEMENTRIAN" && y.Identifier2 == ViewBag.KPPN && y.ColumnValue < 0))
+                            .GroupBy(y => new { Identifier5 = y.Identifier5 });
+
+                        @*Saldo Hibah Ledger kas dan ledger akrual*@
+                        var SaldoHibahKas = Model.AssuranceResult.Where(y => y.RiskCode == "RGL32" && y.Identifier2 == ViewBag.KPPN && y.ColumnName == "AMOUNT_CASH").Sum(y => y.ColumnValue);
+                        var SaldoHibahAkrual = Model.AssuranceResult.Where(y => y.RiskCode == "RGL32" && y.Identifier2 == ViewBag.KPPN && y.ColumnName == "AMOUNT_ACCRUAL").Sum(y => y.ColumnValue);
+                        var SaldoHibah_Akrual_Kas_Selisih = Model.AssuranceResult.Where(y => y.RiskCode == "RGL32" && y.Identifier2 == ViewBag.KPPN && y.ColumnName == "SELISIH").Sum(y => y.ColumnValue);
+                        var SatkerHibah_Akrual_Kas_Selisih = Model.AssuranceResult.Where(y => y.RiskCode == "RGL32" && y.Identifier2 == ViewBag.KPPN && y.ColumnName == "SELISIH" && y.ColumnValue != 0).GroupBy(y => y.Identifier1).Count();
+                        var KPPNSatkerHibah_Akrual_Kas_Selisih = Model.AssuranceResult.Where(y => y.RiskCode == "RGL32" && y.Identifier2 == ViewBag.KPPN && y.ColumnName == "SELISIH" && y.ColumnValue != 0).GroupBy(y => y.Identifier2).Count();
+
+                        @*Olah Data Saldo Kas BP*@
+                        @*Informasi Umum Satker Kas BP*@
+                        var SatkerBP = Model.AssuranceResult.Where(y => y.RiskCode == "RGL01" && y.Identifier2 == ViewBag.KPPN).GroupBy(y => y.Identifier4).Count();
+                        var KPPNSatkerBP = Model.AssuranceResult.Where(y => y.RiskCode == "RGL01" && y.Identifier2 == ViewBag.KPPN).GroupBy(y => y.Identifier2).Count();
+                        var groupedData_ERekon_SPAN_Satker_Selisih_BP = Model.AssuranceResult.Where(y => y.RiskCode == "RGL01" && y.Identifier2 == ViewBag.KPPN && (y.ColumnName == "AMOUNT_ACCRUAL" || y.ColumnName == "SAI" || y.ColumnName == "SIAP" || y.ColumnName == "SELISIH_SIAP_SAI"))
+                          .GroupBy(x => new { Identifier2 = x.Identifier2, Identifier4 = x.Identifier4, Identifier1 = x.Identifier1 })
+                          .Where(x => x.OrderBy(y => y.ColumnName).Skip(2).First().ColumnValue != 0 //selisih SIAP SAI
+                                        || x.OrderBy(y => y.ColumnName).First().ColumnValue - x.OrderBy(y => y.ColumnName).Last().ColumnValue != 0 //Selisih SPAN dengan E-Rekon SIAP
+                                        || x.OrderBy(y => y.ColumnName).First().ColumnValue - x.OrderBy(y => y.ColumnName).Skip(1).First().ColumnValue != 0); //Selisih SPAN dengan E-Rekon SAI
+
+                        @*Saldo BP SPAN (Ledger kas dan ledger akrual)*@
+                        var SaldoBPKas = Model.AssuranceResult.Where(y => y.RiskCode == "RGL01" && y.Identifier2 == ViewBag.KPPN && y.ColumnName == "AMOUNT_CASH").Sum(y => y.ColumnValue);
+                        var SaldoBPAkrual = Model.AssuranceResult.Where(y => y.RiskCode == "RGL01" && y.Identifier2 == ViewBag.KPPN && y.ColumnName == "AMOUNT_ACCRUAL").Sum(y => y.ColumnValue);
+                        var SaldoBPSelisih = Model.AssuranceResult.Where(y => y.RiskCode == "RGL01" && y.Identifier2 == ViewBag.KPPN && y.ColumnName == "SELISIH").Sum(y => y.ColumnValue);
+                        var SatkerBP_Akrual_Kas_Selisih = Model.AssuranceResult.Where(y => y.RiskCode == "RGL01" && y.Identifier2 == ViewBag.KPPN && y.ColumnName == "SELISIH" && y.ColumnValue != 0).GroupBy(y => y.Identifier4).Count();
+                        var KPPNSatkerBP_Akrual_Kas_Selisih = Model.AssuranceResult.Where(y => y.RiskCode == "RGL01" && y.Identifier2 == ViewBag.KPPN && y.ColumnName == "SELISIH" && y.ColumnValue != 0).GroupBy(y => y.Identifier2).Count();
+                        var SaldoBP_SPAN_Minus = Model.AssuranceResult.Where(y => (y.RiskCode == "RGL01" && y.Identifier2 == ViewBag.KPPN && y.ColumnName == "AMOUNT_ACCRUAL" && y.ColumnValue < 0) || (y.RiskCode == "RGL01" && y.ColumnName == "AMOUNT_CASH" && y.Identifier2 == ViewBag.KPPN && y.ColumnValue < 0))
+                            .GroupBy(y => new { Identifier4 = y.Identifier4 });
+
+                        @*Saldo BP SPAN dan ERekon*@
+                        var SaldoBP_ERekon_SIAP = Model.AssuranceResult.Where(y => y.RiskCode == "RGL01" && y.Identifier2 == ViewBag.KPPN && y.ColumnName == "SIAP").Sum(y => y.ColumnValue);
+                        var SaldoBP_ERekon_SAI = Model.AssuranceResult.Where(y => y.RiskCode == "RGL01" && y.Identifier2 == ViewBag.KPPN && y.ColumnName == "SAI").Sum(y => y.ColumnValue);
+                        var SaldoBP_ERekon_SIAP_SAI_Selisih = Model.AssuranceResult.Where(y => y.RiskCode == "RGL01" && y.Identifier2 == ViewBag.KPPN && y.ColumnName == "SELISIH_SIAP_SAI").Sum(y => y.ColumnValue);
+                        var SatkerBP_ERekon_SIAP_SAI_Selisih = Model.AssuranceResult.Where(y => y.RiskCode == "RGL01" && y.Identifier2 == ViewBag.KPPN && y.ColumnName == "SELISIH_SIAP_SAI" && y.ColumnValue != 0).GroupBy(y => y.Identifier4).Count();
+                        var KPPNSatkerBP_ERekon_SIAP_SAI_Selisih = Model.AssuranceResult.Where(y => y.RiskCode == "RGL01" && y.Identifier2 == ViewBag.KPPN && y.ColumnName == "SELISIH_SIAP_SAI" && y.ColumnValue != 0).GroupBy(y => y.Identifier2).Count();
+                        var SaldoBP_Selisih_ERekon_SAI_SPAN = SaldoBP_ERekon_SAI - SaldoBPAkrual;
+                        var SaldoBP_Selisih_ERekon_SIAP_SPAN = SaldoBP_ERekon_SIAP - SaldoBPAkrual;
+                    <ol type="1">
+
+                        <li><strong>Kas di Rekening KPPN</strong></li>
+                        @*Pertama kita bandingkan antara Kas di Rekening KPPN menurut neraca dan akun pembentuknya*@
+                        @if (Saldo_RekeningKPPN_Neraca == 0 && Saldo_RekeningKPPN_LedgerKas == 0)
+                        {
+                            <p align="justify">
+                                Berdasarkan data SPAN pada SLDK, diketahui bahwa KPPN @{Html.RenderAction("PickUnit", new { id = ViewBag.KPPN, org = "KPPN" });} per @Model.SPANReportPeriod tidak memiliki saldo kas di rekening KPPN.
+                            </p>
+                        }
+                        else
+                        {
+                            if (groupedData_RekeningKPPN_Neraca_Ledger_Selisih.Count() == 0)
+                            {
+                                <p align="justify">
+                                    Berdasarkan data SPAN pada SLDK, saldo Rekening Kas di KPPN @{Html.RenderAction("PickUnit", new { id = ViewBag.KPPN, org = "KPPN" });} per @Model.SPANReportPeriod
+                                    telah sesuai antara Neraca dengan akun-akun pembentuknya pada ledger kas, yaitu sebesar Rp @String.Format("{0:n}", Saldo_RekeningKPPN_Neraca).
+                                </p>
+                            }
+
+                            else
+                            {
+                                <p align="justify">
+                                    Saldo Kas di Rekening KPPN @{Html.RenderAction("PickUnit", new { id = ViewBag.KPPN, org = "KPPN" });} menurut Neraca KPPN adalah Rp @String.Format("{0:n}", Saldo_RekeningKPPN_Neraca).
+                                    Namun demikian, berdasarkan data SPAN pada SLDK, terdapat perbedaan saldo Kas di Rekening KPPN per @Model.SPANReportPeriod menurut Neraca dan rincian akun pembentuknya pada ledger kas.
+                                    Saldo menurut ledger kas adalah Rp @String.Format("{0:n}", Saldo_RekeningKPPN_LedgerKas) sehingga terdapat selisih saldo kas di rekening KPPN sebesar Rp @String.Format("{0:n}", Saldo_RekeningKPPN_NeracaLedger_Selisih).
+                                </p>
+                            }
+
+                            if (groupedData_RekeningKPPN_Akrual_Kas_Selisih.Count() != 0)
+                            {
+                                <p align="justify">
+                                    Namun demikian, diketahui bahwa terdapat selisih Saldo Kas di KPPN  @{Html.RenderAction("PickUnit", new { id = ViewBag.KPPN, org = "KPPN" });} menurut ledger kas dan ledger akrual.
+                                    Saldo Kas di KPPN menurut Ledger Akrual adalah Rp @String.Format("{0:n}", Saldo_RekeningKPPN_LedgerAkrual), sementara menurut ledger kas adalah Rp @String.Format("{0:n}", Saldo_RekeningKPPN_LedgerKas).
+                                    Terdapat selisih sebesar Rp @String.Format("{0:n}", Saldo_RekeningKPPN_AkrualKas_Selisih).
+                                </p>
+                            }
+                        }
+
+                        <br />
+
+                        <li><strong>Kas BLU</strong></li>
+
+                        @*Cek apakah ada satker yang memiliki kas BLU di KPPN tersebut*@
+                        @if (SatkerBLU == 0)
+                        {
+                            <p align="justify">
+                                Berdasarkan data SPAN pada SLDK, diketahui bahwa KPPN @{Html.RenderAction("PickUnit", new { id = ViewBag.KPPN, org = "KPPN" });} per @Model.SPANReportPeriod tidak memiliki saldo kas di BLU.
+                            </p>
+                        }
+
+                        else
+                        {
+                            @*Pertama, kita membandingkan dulu antara Neraca KPPN/Neraca Kas dengan LAK Face menggunakan hasil dari RGL02*@
+                            if (SaldoBLU_NeracaKPPN_LAKFace_Selisih == 0)
+                            {
+
+                                <p align="justify">
+                                    Saldo Kas BLU pada KPPN @{Html.RenderAction("PickUnit", new { id = ViewBag.KPPN, org = "KPPN" });} per @Model.SPANReportPeriod berdasarkan data SPAN pada SLDK,
+                                    menunjukkan tidak adanya perbedaan antara saldo menurut LAK Face dan Neraca KPPN, yaitu sebesar Rp @String.Format("{0:n}", SaldoBLU_NeracaKPPN).
+                                    Kas BLU dimaksud berasal dari @SatkerBLU Satker.
+                                </p>
+
+                            }
+                            else
+                            {
+                                <p align="justify">
+                                    Saldo Kas BLU menurut Neraca KPPN @{Html.RenderAction("PickUnit", new { id = ViewBag.KPPN, org = "KPPN" });} adalah Rp @String.Format("{0:n}", SaldoBLU_NeracaKPPN). Kas BLU dimaksud berasal dari @SatkerBLU Satker pada @KPPNSatkerBLU KPPN.
+                                    Namun demikian, berdasarkan data SPAN pada SLDK, terdapat perbedaan saldo Kas BLU per @Model.SPANReportPeriod menurut Neraca KPPN dan LAK Face.
+                                    Saldo menurut LAK Face adalah Rp @String.Format("{0:n}", SaldoBLU_LAKFace) sehingga terdapat selisih saldo kas BLU sebesar Rp @String.Format("{0:n}", SaldoBLU_NeracaKPPN_LAKFace_Selisih).
+                                    Selisih tersebut berasal dari @SatkerBLU_NeracaKPPN_LAKFace_Selisih Satker KPPN @{Html.RenderAction("PickUnit", new { id = ViewBag.KPPN, org = "KPPN" });} dengan rincian sebagai berikut:
+                                </p>
+                                <table class="dataTable" border="1">
+                                    <thead>
+                                        <tr>
+                                            <th>Kode Satker</th>
+                                            <th>Nama Satker</th>
+                                            <th>Kode KPPN</th>
+                                            <th>KPPN</th>
+                                            <th>Neraca KPPN</th>
+                                            <th>LAK Face</th>
+                                            <th>Selisih</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @{var groupedData = Model.AssuranceResult.Where(y => y.RiskCode == "RGL02" && y.Identifier2 == ViewBag.KPPN && (y.ColumnName == "SALDO_KAS_BLU" || y.ColumnName == "SALDO_KAS_LAK" || y.ColumnName == "SELISIH_SALDO_KAS_LAK_BLU")).GroupBy(x => new { Identifier5 = x.Identifier5, Identifier2 = x.Identifier2 });
+                                        }
+
+                                        @foreach (var data in groupedData.Where(y => y.Where(x => x.OutputColumnList.isAnomalyIdentifier && x.ColumnValue != 0).Count() != 0))
+                                        {
+                                            <tr>
+                                                <td>@data.Key.Identifier5</td>
+                                                <td>@{Html.RenderAction("PickUnit", new { id = data.Key.Identifier5, org = "Satker" });}</td>
+                                                <td>@data.Key.Identifier2</td>
+                                                <td>@{Html.RenderAction("PickUnit", new { id = data.Key.Identifier2, org = "KPPN" });}</td>
+                                                @foreach (var item in data.OrderBy(y => y.ColumnName))
+                                                {
+                                                    <td>@String.Format("{0:n}", item.ColumnValue)</td>
+                                                }
+
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            }
+
+@*Berikutnya dicek apakah terdapat saldo minus di SPAN*@
+                            if (SaldoBLU_SPAN_Minus.Count() != 0)
+                            {
+                                <p>
+                                    Berdasarkan penelitian lebih lanjut, terdapat @SaldoBLU_SPAN_Minus.Count() satker mitra KPPN @{Html.RenderAction("PickUnit", new { id = ViewBag.KPPN, org = "KPPN" });} yang memiliki saldo Kas BLU
+                                    yang bernilai minus yaitu pada Satker berikut ini:
+                                </p>
+                                <table border="1" class="dataTable">
+                                    <thead>
+                                        <tr>
+                                            <th>
+                                                Satker
+                                            </th>
+                                            <th>Saldo Kas BLU</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var stk in SaldoBLU_SPAN_Minus)
+                                        {
+                                            <tr>
+                                                <td>
+                                                    @{Html.RenderAction("PickUnit", new { id = stk.Key.Identifier4, org = "Satker" });}
+                                                </td>
+                                                <td>
+                                                    @String.Format("{0:n}", stk.OrderBy(y => y.ColumnValue).First().ColumnValue)
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+
+                            }
+
+                            @*Selanjutnya, kita membandingkan data SPAN dan Erekon menggunakan hasil dari RGL02*@
+                            if (SaldoBLU_Selisih_ERekon_SAI_SPAN == 0 && SaldoBLU_Selisih_ERekon_SIAP_SPAN == 0)
+                            {
+                                <p align="justify">
+                                    Saldo kas BLU menurut SPAN tersebut telah sesuai dengan saldo menurut E-Rekon-LK (SIAP dan SAI) yakni sebesar @String.Format("{0:n}", SaldoBLU_NeracaKPPN)
+                                </p>
+                            }
+                            else
+                            {
+                                <p align="justify">
+                                    Berdasarkan perbandingan data SPAN pada SLDK dengan data e-rekon-LK terdapat perbedaan nilai Kas
+                                    BLU pada KPPN @{Html.RenderAction("PickUnit", new { id = ViewBag.KPPN, org = "KPPN" });}. Yakni sebesar Rp @String.Format("{0:n}", SaldoBLU_Selisih_ERekon_SAI_SPAN) antara data SPAN di SLDK dengan SAI pada aplikasi e-Rekon-LK dan
+                                    Rp @String.Format("{0:n}", SaldoBLU_Selisih_ERekon_SIAP_SPAN) antara data SPAN di SLDK dengan SIAP pada aplikasi e-Rekon-LK dengan rincian sebagai berikut:
+                                </p>
+
+                                <table class="dataTable" border="1">
+                                    <thead>
+                                        <tr>
+                                            <th>Periode</th>
+                                            <th>Laporan</th>
+                                            <th>SPAN-SLDK (Rp)</th>
+                                            <th>Data</th>
+                                            <th>E-Rekon-LK (Rp)</th>
+                                            <th>Selisih (Rp)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td rowspan="2">@Model.SPANReportPeriod</td>
+                                            <td>LAK Face</td>
+                                            <td rowspan="2" style="vertical-align:middle!important;">@String.Format("{0:n}", SaldoBLU_NeracaKPPN)</td>
+                                            <td>SIAP</td>
+                                            <td>@String.Format("{0:n}", SaldoBLU_ERekon_SIAP)</td>
+                                            <td>@String.Format("{0:n}", SaldoBLU_Selisih_ERekon_SIAP_SPAN)</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Neraca Kas</td>
+                                            <td>SAI</td>
+                                            <td>@String.Format("{0:n}", SaldoBLU_ERekon_SAI)</td>
+                                            <td>@String.Format("{0:n}", SaldoBLU_Selisih_ERekon_SAI_SPAN)</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+
+                                <p>
+                                    Selisih dimaksud disebabkan oleh adanya selisih rekonsiliasi pada @groupedData_ERekon_SPAN_Satker_Selisih_BLU.Count() Satker yaitu:
+                                </p>
+
+                                <table border="1" class="dataTable">
+                                    <thead>
+                                        <tr>
+                                            <th>
+                                                Kode Satker
+                                            </th>
+                                            <th>
+                                                Nama Satker
+                                            </th>
+                                            <th>
+                                                Kode KPPN
+                                            </th>
+                                            <th>
+                                                Nama KPPN
+                                            </th>
+                                            <th>
+                                                SPAN - SLDK (Rp)
+                                            </th>
+                                            <th>
+                                                SAI e-Rekon (Rp)
+                                            </th>
+                                            <th>
+                                                Selisih SPAN - SAI e-Rekon (Rp)
+                                            </th>
+                                            <th>
+                                                SIAP e-Rekon (Rp)
+                                            </th>
+                                            <th>
+                                                Selisih SPAN - SIAP e-Rekon (Rp)
+                                            </th>
+                                            <th>
+                                                Selisih SIAP-SAI e-Rekon (Rp)
+                                            </th>
+                                            <th>Catatan</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var satker in groupedData_ERekon_SPAN_Satker_Selisih_BLU)
+                                        {
+                                            <tr>
+                                                <td>
+                                                    @satker.Key.Identifier5
+                                                </td>
+                                                <td>@{Html.RenderAction("PickUnit", new { id = satker.Key.Identifier5, org = "Satker" });}</td>
+                                                <td>
+                                                    @satker.Key.Identifier2
+                                                </td>
+                                                <td>@{Html.RenderAction("PickUnit", new { id = satker.Key.Identifier2, org = "KPPN" });}</td>
+                                                <td>
+                                                    @String.Format("{0:n}", satker.OrderBy(y => y.ColumnName).Skip(2).First().ColumnValue)
+                                                </td>
+                                                <td>
+                                                    @String.Format("{0:n}", satker.OrderBy(y => y.ColumnName).First().ColumnValue)
+                                                </td>
+                                                <td>@String.Format("{0:n}", satker.OrderBy(y => y.ColumnName).Skip(2).First().ColumnValue - satker.OrderBy(y => y.ColumnName).First().ColumnValue)</td>
+                                                <td>
+                                                    @String.Format("{0:n}", satker.OrderBy(y => y.ColumnName).Skip(1).First().ColumnValue)
+                                                </td>
+                                                <td>@String.Format("{0:n}", satker.OrderBy(y => y.ColumnName).Skip(2).First().ColumnValue - satker.OrderBy(y => y.ColumnName).Skip(1).First().ColumnValue)</td>
+                                                <td>
+                                                    @String.Format("{0:n}", satker.OrderBy(y => y.ColumnName).Last().ColumnValue)
+                                                </td>
+                                                <td>
+                                                    @if (satker.Key.Identifier1 != "KONFIRMASI")
+                                                    {
+                                                        <span>Double posting</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span>Selisih</span>
+                                                    }
+                                                </td>
+                                            </tr>
+                                        }
+
+                                    </tbody>
+                                </table>
+                            }
+
+                            @*Di sini dilakukan penyajian data jika terjadi selisih ledger kas dan ledger akrual berdasarkan hasil dari RGL20*@
+
+                            if (SaldoBLU_Akrual_Kas_Selisih != 0)
+                            {
+                                <p align="justify">
+                                    Selain itu, pada KPPN @{Html.RenderAction("PickUnit", new { id = ViewBag.KPPN, org = "KPPN" });} terdapat selisih antara saldo Kas BLU menurut ledger kas dan ledger akrual. Saldo Kas BLU menurut Ledger Kas adalah Rp @String.Format("{0:n}", SaldoBLUKas).
+                                    Sementara menurut Ledger Akrual saldo Kas BLU adalah Rp @String.Format("{0:n}", SaldoBLUAkrual) sehingga terdapat selisih saldo kas BLU sebesar Rp @String.Format("{0:n}", SaldoBLU_Akrual_Kas_Selisih).
+                                    Selisih tersebut berasal dari @SatkerBLU_Akrual_Kas_Selisih Satker pada  KPPN @{Html.RenderAction("PickUnit", new { id = ViewBag.KPPN, org = "KPPN" });} dengan rincian sebagai berikut:
+                                </p>
+                                <table class="dataTable" border="1">
+                                    <thead>
+                                        <tr>
+                                            <th>Kode Satker</th>
+                                            <th>Nama Satker</th>
+                                            <th>Kode KPPN</th>
+                                            <th>KPPN</th>
+                                            <th>Ledger Akrual</th>
+                                            <th>Ledger Kas</th>
+                                            <th>Selisih</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @{var groupedData = Model.AssuranceResult.Where(y => y.RiskCode == "RGL31" && y.Identifier2 == ViewBag.KPPN).GroupBy(x => new { Identifier5 = x.Identifier5, Identifier2 = x.Identifier2 });
+                                        }
+
+                                        @foreach (var data in groupedData.Where(y => y.Where(x => x.OutputColumnList.isAnomalyIdentifier && x.ColumnValue != 0).Count() != 0))
+                                        {
+                                            <tr>
+                                                <td>@data.Key.Identifier5</td>
+                                                <td>@{Html.RenderAction("PickUnit", new { id = data.Key.Identifier5, org = "Satker" });}</td>
+                                                <td>@data.Key.Identifier2</td>
+                                                <td>@{Html.RenderAction("PickUnit", new { id = data.Key.Identifier2, org = "KPPN" });}</td>
+                                                @foreach (var item in data.OrderBy(y => y.ColumnName))
+                                                {
+                                                    <td>@String.Format("{0:n}", item.ColumnValue)</td>
+                                                }
+
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            }
+                        }
+
+
+                        <br />
+                        <br />
+                        <li>
+                            <strong>Kas Hibah</strong>
+                        </li>
+
+                        @*Cek apakah ada satker yang memiliki kas Hibah di KPPN tersebut*@
+                        @if (SatkerHibah == 0)
+                        {
+                            <p align="justify">
+                                Berdasarkan data SPAN pada SLDK, diketahui bahwa KPPN @{Html.RenderAction("PickUnit", new { id = ViewBag.KPPN, org = "KPPN" });} per @Model.SPANReportPeriod tidak memiliki saldo kas di Kementerian/Lembaga (Hibah).
+                            </p>
+                        }
+                        else
+                        {
+                            @*Pertama, kita membandingkan dulu antara Neraca KPPN/Neraca Kas dengan LAK Face menggunakan hasil dari RGL03*@
+                            if (SaldoHibah_NeracaKPPN_LAKFace_Selisih == 0)
+                            {
+
+                                <p align="justify">
+                                    Saldo Kas di Kementerian/Lembaga (Hibah) pada KPPN @{Html.RenderAction("PickUnit", new { id = ViewBag.KPPN, org = "KPPN" });} per @Model.SPANReportPeriod berdasarkan data SPAN pada SLDK,
+                                    menunjukkan tidak adanya perbedaan antara saldo menurut LAK Face dan Neraca KPPN, yaitu sebesar Rp @String.Format("{0:n}", SaldoHibah_NeracaKPPN).
+                                    Kas Hibah dimaksud berasal dari @SatkerHibah Satker pada  KPPN @{Html.RenderAction("PickUnit", new { id = ViewBag.KPPN, org = "KPPN" });}.
+                                </p>
+
+                            }
+                            else
+                            {
+                                <p align="justify">
+                                    Saldo Kas di Kementerian/Lembaga (Hibah) menurut Neraca KPPN @{Html.RenderAction("PickUnit", new { id = ViewBag.KPPN, org = "KPPN" });} adalah Rp @String.Format("{0:n}", SaldoHibah_NeracaKPPN). Kas Hibah dimaksud berasal dari @SatkerHibah Satker pada @KPPNSatkerHibah KPPN.
+                                    Namun demikian, berdasarkan data SPAN pada SLDK, terdapat perbedaan saldo Kas di Kementerian/Lembaga per @Model.SPANReportPeriod menurut Neraca KPPN dan LAK Face.
+                                    Saldo menurut LAK Face adalah Rp @String.Format("{0:n}", SaldoHibah_LAKFace) sehingga terdapat selisih saldo kas di Kementerian/Lembaga sebesar Rp @String.Format("{0:n}", SaldoHibah_NeracaKPPN_LAKFace_Selisih).
+                                    Selisih tersebut berasal dari @SatkerHibah_NeracaKPPN_LAKFace_Selisih Satker pada KPPN @{Html.RenderAction("PickUnit", new { id = ViewBag.KPPN, org = "KPPN" });} dengan rincian sebagai berikut:
+                                </p>
+                                <table class="dataTable" border="1">
+                                    <thead>
+                                        <tr>
+                                            <th>Kode Satker</th>
+                                            <th>Nama Satker</th>
+                                            <th>Kode KPPN</th>
+                                            <th>KPPN</th>
+                                            <th>Neraca KPPN</th>
+                                            <th>LAK Face</th>
+                                            <th>Selisih</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @{var groupedData = Model.AssuranceResult.Where(y => y.RiskCode == "RGL03" && y.Identifier2 == ViewBag.KPPN && (y.ColumnName == "SALDO_KAS_KEMENTERIAN" || y.ColumnName == "SALDO_KAS_LAK" || y.ColumnName == "SELISIH_SALDO_KAS_LAK_KEMENTERIAN")).GroupBy(x => new { Identifier5 = x.Identifier5, Identifier2 = x.Identifier2 });
+                                        }
+
+                                        @foreach (var data in groupedData.Where(y => y.Where(x => x.OutputColumnList.isAnomalyIdentifier && x.ColumnValue != 0).Count() != 0))
+                                        {
+                                            <tr>
+                                                <td>@data.Key.Identifier5</td>
+                                                <td>@{Html.RenderAction("PickUnit", new { id = data.Key.Identifier5, org = "Satker" });}</td>
+                                                <td>@data.Key.Identifier2</td>
+                                                <td>@{Html.RenderAction("PickUnit", new { id = data.Key.Identifier2, org = "KPPN" });}</td>
+                                                @foreach (var item in data.OrderBy(y => y.ColumnName))
+                                                {
+                                                    <td>@String.Format("{0:n}", item.ColumnValue)</td>
+                                                }
+
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            }
+
+                            @*Cek apakah ada saldo Hibah minus*@
+                            if (SaldoHibah_SPAN_Minus.Count() != 0)
+                            {
+                                <p>
+                                    Berdasarkan penelitian lebih lanjut, terdapat @SaldoHibah_SPAN_Minus.Count() satker mitra KPPN @{Html.RenderAction("PickUnit", new { id = ViewBag.KPPN, org = "KPPN" });} yang memiliki saldo Kas Lainnya di Kementerian/Lembaga (Hibah)
+                                    yang bernilai minus yaitu pada Satker berikut ini:
+                                </p>
+                                <table border="1" class="dataTable">
+                                    <thead>
+                                        <tr>
+                                            <th>
+                                                Satker
+                                            </th>
+                                            <th>Saldo Kas Lainnya di K/L</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var stk in SaldoHibah_SPAN_Minus)
+                                        {
+                                            <tr>
+                                                <td>
+                                                    @{Html.RenderAction("PickUnit", new { id = stk.Key.Identifier5, org = "Satker" });}
+                                                </td>
+                                                <td>
+                                                    @String.Format("{0:n}", stk.OrderBy(y => y.ColumnValue).First().ColumnValue)
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+
+                            }
+
+                            @*Selanjutnya, kita membandingkan data SPAN dan Erekon menggunakan hasil dari RGL03*@
+                            if (SaldoHibah_Selisih_ERekon_SAI_SPAN == 0 && SaldoHibah_Selisih_ERekon_SIAP_SPAN == 0)
+                            {
+                                <p align="justify">
+                                    Saldo kas di Kementerian/Lembaga menurut SPAN tersebut telah sesuai dengan saldo menurut E-Rekon-LK (SIAP dan SAI) yakni sebesar @String.Format("{0:n}", SaldoBLU_NeracaKPPN)
+                                </p>
+                            }
+                            else
+                            {
+                                <p align="justify">
+                                    Berdasarkan perbandingan data SPAN pada SLDK dengan data e-rekon-LK terdapat perbedaan nilai Kas
+                                    di Kementerian/Lembaga pada KPPN @{Html.RenderAction("PickUnit", new { id = ViewBag.KPPN, org = "KPPN" });}. Yakni sebesar Rp @String.Format("{0:n}", SaldoHibah_Selisih_ERekon_SAI_SPAN) antara data SPAN di SLDK dengan SAI pada aplikasi e-Rekon-LK dan
+                                    Rp @String.Format("{0:n}", SaldoHibah_Selisih_ERekon_SIAP_SPAN) antara data SPAN di SLDK dengan SIAP pada aplikasi e-Rekon-LK dengan rincian sebagai berikut:
+                                </p>
+
+                                <table class="dataTable" border="1">
+                                    <thead>
+                                        <tr>
+                                            <th>Periode</th>
+                                            <th>Laporan</th>
+                                            <th>SPAN-SLDK (Rp)</th>
+                                            <th>Data</th>
+                                            <th>E-Rekon-LK (Rp)</th>
+                                            <th>Selisih (Rp)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td rowspan="2">@Model.SPANReportPeriod</td>
+                                            <td>LAK Face</td>
+                                            <td rowspan="2" style="vertical-align:middle!important;">@String.Format("{0:n}", SaldoHibah_NeracaKPPN)</td>
+                                            <td>SIAP</td>
+                                            <td>@String.Format("{0:n}", SaldoHibah_ERekon_SIAP)</td>
+                                            <td>@String.Format("{0:n}", SaldoHibah_Selisih_ERekon_SIAP_SPAN)</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Neraca Kas</td>
+                                            <td>SAI</td>
+                                            <td>@String.Format("{0:n}", SaldoHibah_ERekon_SAI)</td>
+                                            <td>@String.Format("{0:n}", SaldoHibah_Selisih_ERekon_SAI_SPAN)</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+
+                                <p>
+                                    Selisih dimaksud disebabkan oleh adanya selisih rekonsiliasi pada @groupedData_ERekon_SPAN_Satker_Selisih_Hibah.Count() Satker KPPN @{Html.RenderAction("PickUnit", new { id = ViewBag.KPPN, org = "KPPN" });} yaitu:
+                                </p>
+
+                                <table border="1" class="dataTable">
+                                    <thead>
+                                        <tr>
+                                            <th>
+                                                Kode Satker
+                                            </th>
+                                            <th>
+                                                Nama Satker
+                                            </th>
+                                            <th>
+                                                Kode KPPN
+                                            </th>
+                                            <th>
+                                                Nama KPPN
+                                            </th>
+                                            <th>
+                                                SPAN - SLDK (Rp)
+                                            </th>
+                                            <th>
+                                                SAI e-Rekon (Rp)
+                                            </th>
+                                            <th>
+                                                Selisih SPAN - SAI e-Rekon (Rp)
+                                            </th>
+                                            <th>
+                                                SIAP e-Rekon (Rp)
+                                            </th>
+                                            <th>
+                                                Selisih SPAN - SIAP e-Rekon (Rp)
+                                            </th>
+                                            <th>
+                                                Selisih SIAP-SAI e-Rekon (Rp)
+                                            </th>
+                                            <th>Catatan</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var satker in groupedData_ERekon_SPAN_Satker_Selisih_Hibah)
+                                        {
+                                            <tr>
+                                                <td>
+                                                    @satker.Key.Identifier5
+                                                </td>
+                                                <td>@{Html.RenderAction("PickUnit", new { id = satker.Key.Identifier5, org = "Satker" });}</td>
+                                                <td>
+                                                    @satker.Key.Identifier2
+                                                </td>
+                                                <td>@{Html.RenderAction("PickUnit", new { id = satker.Key.Identifier2, org = "KPPN" });}</td>
+                                                <td>
+                                                    @String.Format("{0:n}", satker.OrderBy(y => y.ColumnName).Skip(1).First().ColumnValue)
+                                                </td>
+                                                <td>
+                                                    @String.Format("{0:n}", satker.OrderBy(y => y.ColumnName).First().ColumnValue)
+                                                </td>
+                                                <td>@String.Format("{0:n}", satker.OrderBy(y => y.ColumnName).Skip(1).First().ColumnValue - satker.OrderBy(y => y.ColumnName).First().ColumnValue)</td>
+                                                <td>
+                                                    @String.Format("{0:n}", satker.OrderBy(y => y.ColumnName).Last().ColumnValue)
+                                                </td>
+                                                <td>@String.Format("{0:n}", satker.OrderBy(y => y.ColumnName).Skip(1).First().ColumnValue - satker.OrderBy(y => y.ColumnName).Last().ColumnValue)</td>
+                                                <td>
+                                                    @String.Format("{0:n}", satker.OrderBy(y => y.ColumnName).Skip(2).First().ColumnValue)
+                                                </td>
+                                                <td>
+                                                    @if (satker.Key.Identifier1 != "KONFIRMASI")
+                                                    {
+                                                        <span>Double posting</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span>Selisih</span>
+                                                    }
+                                                </td>
+                                            </tr>
+                                        }
+
+                                    </tbody>
+                                </table>
+                            }
+
+                            @*Di sini dilakukan penyajian data jika terjadi selisih ledger kas dan ledger akrual berdasarkan hasil dari RGL32*@
+
+                            if (SaldoHibah_Akrual_Kas_Selisih != 0)
+                            {
+                                <p align="justify">
+                                    Selain itu, pada KPPN @{Html.RenderAction("PickUnit", new { id = ViewBag.KPPN, org = "KPPN" });} terdapat selisih antara saldo Kas di Kementerian/Lembaga menurut ledger kas dan ledger akrual. Saldo Kas di Kementerian/Lembaga menurut Ledger Kas adalah Rp @String.Format("{0:n}", SaldoHibahKas).
+                                    Sementara menurut Ledger Akrual saldo Kas di Kementerian/Lembaga adalah Rp @String.Format("{0:n}", SaldoHibahAkrual) sehingga terdapat selisih saldo kas di Kementerian/Lembaga sebesar Rp @String.Format("{0:n}", SaldoHibah_Akrual_Kas_Selisih).
+                                    Selisih tersebut berasal dari @SatkerHibah_Akrual_Kas_Selisih Satker pada KPPN @{Html.RenderAction("PickUnit", new { id = ViewBag.KPPN, org = "KPPN" });} dengan rincian sebagai berikut:
+                                </p>
+                                <table class="dataTable" border="1">
+                                    <thead>
+                                        <tr>
+                                            <th>Kode Satker</th>
+                                            <th>Nama Satker</th>
+                                            <th>Kode KPPN</th>
+                                            <th>KPPN</th>
+                                            <th>Ledger Akrual</th>
+                                            <th>Ledger Kas</th>
+                                            <th>Selisih</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @{var groupedData = Model.AssuranceResult.Where(y => y.RiskCode == "RGL32" && y.Identifier2 == ViewBag.KPPN).GroupBy(x => new { Identifier1 = x.Identifier1, Identifier2 = x.Identifier2 });
+                                        }
+
+                                        @foreach (var data in groupedData.Where(y => y.Where(x => x.OutputColumnList.isAnomalyIdentifier && x.ColumnValue != 0).Count() != 0))
+                                        {
+                                            <tr>
+                                                <td>@data.Key.Identifier1</td>
+                                                <td>@{Html.RenderAction("PickUnit", new { id = data.Key.Identifier1, org = "Satker" });}</td>
+                                                <td>@data.Key.Identifier2</td>
+                                                <td>@{Html.RenderAction("PickUnit", new { id = data.Key.Identifier2, org = "KPPN" });}</td>
+                                                @foreach (var item in data.OrderBy(y => y.ColumnName))
+                                                {
+                                                    <td>@String.Format("{0:n}", item.ColumnValue)</td>
+                                                }
+
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            }
+                        }
+
+
+                        <br />
+                        <br />
+                        <li>
+                            <strong>Kas di Bendahara Pengeluaran</strong>
+                        </li>
+
+                        @*Di sini dilakukan perbandingan saldo kas BP menurut neraca lajur kas dan akrual sesuai script RGL01*@
+                        <table class="dataTable" border="1">
+                            <thead>
+                                <tr>
+                                    <th>Tanggal</th>
+                                    <th>Laporan</th>
+                                    <th>SPAN-SLDK (Rp)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td rowspan="2">
+                                        @Model.SPANReportPeriod
+                                    </td>
+                                    <td>
+                                        Neraca Lajur Akrual
+                                    </td>
+                                    <td>
+                                        @String.Format("{0:n}", SaldoBPAkrual)
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        Neraca Lajur Kas
+                                    </td>
+                                    <td>
+                                        @String.Format("{0:n}", SaldoBPKas)
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td colspan="2">Selisih</td>
+                                    <td>@String.Format("{0:n}", SaldoBPSelisih)</td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+
+                        @if (SaldoBPSelisih == 0)
+                        {
+
+                            <p align="justify">
+                                Saldo Kas BP pada KPPN @{Html.RenderAction("PickUnit", new { id = ViewBag.KPPN, org = "KPPN" });} per @Model.SPANReportPeriod menurut Ledger Kas dan Ledger Akrual berdasarkan data
+                                SLDK, menunjukkan tidak adanya perbedaan yaitu sama sebesar Rp @String.Format("{0:n}", SaldoBPKas).
+                                Kas BP dimaksud berasal dari @SatkerBP Satker.
+                            </p>
+
+                        }
+                        else
+                        {
+                            <p align="justify">
+                                Saldo Kas BP pada KPPN @{Html.RenderAction("PickUnit", new { id = ViewBag.KPPN, org = "KPPN" });} menurut Ledger Kas adalah Rp @String.Format("{0:n}", SaldoBPKas). Kas BP dimaksud berasal dari @SatkerBP Satker pada @KPPNSatkerBP KPPN.
+                                Namun demikian, berdasarkan data SLDK, terdapat perbedaan saldo Kas BP per @Model.SPANReportPeriod menurut Ledger Kas dan Ledger Akrual.
+                                Saldo menurut Ledger Akrual adalah Rp @String.Format("{0:n}", SaldoBPAkrual) sehingga terdapat selisih saldo kas BP sebesar Rp @String.Format("{0:n}", SaldoBPSelisih).
+                                Selisih tersebut berasal dari @SatkerBP_Akrual_Kas_Selisih Satker pada KPPN @{Html.RenderAction("PickUnit", new { id = ViewBag.KPPN, org = "KPPN" });} dengan rincian sebagai berikut:
+                            </p>
+                            <table class="dataTable" border="1">
+                                <thead>
+                                    <tr>
+                                        <th>Kode Satker</th>
+                                        <th>Nama Satker</th>
+                                        <th>Kode KPPN</th>
+                                        <th>KPPN</th>
+                                        <th>Ledger Akrual</th>
+                                        <th>Ledger Kas</th>
+                                        <th>Selisih</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @{var groupedData = Model.AssuranceResult.Where(y => y.RiskCode == "RGL01" && y.Identifier2 == ViewBag.KPPN).GroupBy(x => new { Identifier2 = x.Identifier2, Identifier4 = x.Identifier4 });
+                                    }
+
+                                    @foreach (var data in groupedData.Where(y => y.Where(x => x.OutputColumnList.isAnomalyIdentifier && x.ColumnValue != 0).Count() != 0))
+                                    {
+                                        <tr>
+                                            <td>@data.Key.Identifier4</td>
+                                            <td>@{Html.RenderAction("PickUnit", new { id = data.Key.Identifier4, org = "Satker" });}</td>
+                                            <td>@data.Key.Identifier2</td>
+                                            <td>@{Html.RenderAction("PickUnit", new { id = data.Key.Identifier2, org = "KPPN" });}</td>
+                                            @foreach (var item in data.OrderBy(y => y.ColumnName))
+                                            {
+                                                <td>@String.Format("{0:n}", item.ColumnValue)</td>
+                                            }
+
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        }
+
+                        @*Cek apakah ada saldo BP minus*@
+                        @if (SaldoBP_SPAN_Minus.Count() != 0)
+                        {
+                            <p>
+                                Berdasarkan penelitian lebih lanjut, terdapat @SaldoBP_SPAN_Minus.Count() satker mitra KPPN @{Html.RenderAction("PickUnit", new { id = ViewBag.KPPN, org = "KPPN" });} yang memiliki saldo Kas di Bendahara
+                                Pengeluaran yang bernilai minus yaitu pada Satker berikut ini:
+                            </p>
+                            <table border="1" class="dataTable">
+                                <thead>
+                                    <tr>
+                                        <th>
+                                            Satker
+                                        </th>
+                                        <th>Saldo Kas BP</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var stk in SaldoBP_SPAN_Minus)
+                                    {
+                                        <tr>
+                                            <td>
+                                                @{Html.RenderAction("PickUnit", new { id = stk.Key.Identifier4, org = "Satker" });}
+                                            </td>
+                                            <td>
+                                                @String.Format("{0:n}", stk.OrderBy(y => y.ColumnName).First().ColumnValue)
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+
+                        }
+
+                        @*Selanjutnya, kita membandingkan data SPAN dan Erekon menggunakan hasil dari RGL01*@
+                        @if (SaldoBP_Selisih_ERekon_SAI_SPAN == 0 && SaldoBP_Selisih_ERekon_SIAP_SPAN == 0)
+                        {
+                            <p align="justify">
+                                Saldo kas BP menurut SPAN tersebut telah sesuai dengan saldo menurut E-Rekon-LK (SIAP dan SAI) yakni sebesar @String.Format("{0:n}", SaldoBPAkrual)
+                            </p>
+                        }
+                        else
+                        {
+                            <p align="justify">
+                                Berdasarkan perbandingan data SPAN pada SLDK dengan data e-rekon-LK terdapat perbedaan nilai Kas
+                                BP pada satker mitra KPPN @{Html.RenderAction("PickUnit", new { id = ViewBag.KPPN, org = "KPPN" });}. Yakni sebesar Rp @String.Format("{0:n}", SaldoBP_Selisih_ERekon_SAI_SPAN) antara data SPAN di SLDK dengan SAI pada aplikasi e-Rekon-LK dan
+                                Rp @String.Format("{0:n}", SaldoBP_Selisih_ERekon_SIAP_SPAN) antara data SPAN di SLDK dengan SIAP pada aplikasi e-Rekon-LK dengan rincian sebagai berikut:
+                            </p>
+
+                            <table class="dataTable" border="1">
+                                <thead>
+                                    <tr>
+                                        <th>Periode</th>
+                                        <th>Laporan</th>
+                                        <th>SPAN-SLDK (Rp)</th>
+                                        <th>Data</th>
+                                        <th>E-Rekon-LK (Rp)</th>
+                                        <th>Selisih (Rp)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td rowspan="2">@Model.SPANReportPeriod</td>
+                                        <td>LAK Face</td>
+                                        <td rowspan="2" style="vertical-align:middle!important;">@String.Format("{0:n}", SaldoBPAkrual)</td>
+                                        <td>SIAP</td>
+                                        <td>@String.Format("{0:n}", SaldoBP_ERekon_SIAP)</td>
+                                        <td>@String.Format("{0:n}", SaldoBP_Selisih_ERekon_SIAP_SPAN)</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Neraca Kas</td>
+                                        <td>SAI</td>
+                                        <td>@String.Format("{0:n}", SaldoBP_ERekon_SAI)</td>
+                                        <td>@String.Format("{0:n}", SaldoBP_Selisih_ERekon_SAI_SPAN)</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                            <p>
+                                Selisih dimaksud disebabkan oleh adanya selisih rekonsiliasi pada @groupedData_ERekon_SPAN_Satker_Selisih_BP.Count() Satker yaitu:
+                            </p>
+
+                            <table border="1" class="dataTable">
+                                <thead>
+                                    <tr>
+                                        <th>
+                                            Kode Satker
+                                        </th>
+                                        <th>
+                                            Nama Satker
+                                        </th>
+                                        <th>
+                                            Kode KPPN
+                                        </th>
+                                        <th>
+                                            Nama KPPN
+                                        </th>
+                                        <th>
+                                            SPAN - SLDK (Rp)
+                                        </th>
+                                        <th>
+                                            SAI e-Rekon (Rp)
+                                        </th>
+                                        <th>
+                                            Selisih SPAN - SAI e-Rekon (Rp)
+                                        </th>
+                                        <th>
+                                            SIAP e-Rekon (Rp)
+                                        </th>
+                                        <th>
+                                            Selisih SPAN - SIAP e-Rekon (Rp)
+                                        </th>
+                                        <th>
+                                            Selisih SIAP-SAI e-Rekon (Rp)
+                                        </th>
+                                        <th>Catatan</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var satker in groupedData_ERekon_SPAN_Satker_Selisih_BP)
+                                    {
+                                        <tr>
+                                            <td>
+                                                @satker.Key.Identifier4
+                                            </td>
+                                            <td>@{Html.RenderAction("PickUnit", new { id = satker.Key.Identifier4, org = "Satker" });}</td>
+                                            <td>
+                                                @satker.Key.Identifier2
+                                            </td>
+                                            <td>@{Html.RenderAction("PickUnit", new { id = satker.Key.Identifier2, org = "KPPN" });}</td>
+                                            <td>
+                                                @String.Format("{0:n}", satker.OrderBy(y => y.ColumnName).First().ColumnValue)
+                                            </td>
+                                            <td>
+                                                @String.Format("{0:n}", satker.OrderBy(y => y.ColumnName).Skip(1).First().ColumnValue)
+                                            </td>
+                                            <td>@String.Format("{0:n}", satker.OrderBy(y => y.ColumnName).First().ColumnValue - satker.OrderBy(y => y.ColumnName).Skip(1).First().ColumnValue)</td>
+                                            <td>
+                                                @String.Format("{0:n}", satker.OrderBy(y => y.ColumnName).Last().ColumnValue)
+                                            </td>
+                                            <td>@String.Format("{0:n}", satker.OrderBy(y => y.ColumnName).First().ColumnValue - satker.OrderBy(y => y.ColumnName).Last().ColumnValue)</td>
+                                            <td>
+                                                @String.Format("{0:n}", satker.OrderBy(y => y.ColumnName).Skip(2).First().ColumnValue)
+                                            </td>
+                                            <td>
+                                                @if (satker.Key.Identifier1 != "KONFIRMASI")
+                                                {
+                                                    <span>Double posting</span>
+                                                }
+                                                else
+                                                {
+                                                    <span>Selisih</span>
+                                                }
+                                            </td>
+                                        </tr>
+                                    }
+
+                                </tbody>
+                            </table>
+                        }
+
+                    </ol>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

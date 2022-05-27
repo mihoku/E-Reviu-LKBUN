@@ -1,0 +1,22 @@
+﻿@model IEnumerable<E_Reviu_LKBUN.Models.Module>
+
+@foreach (var item in Model)
+{
+    if (ViewBag.type == "rcm")
+    {
+        <li>
+            <a href="@Url.Action("Index", "RisksList", new { mod = item.ID })">
+                @Html.DisplayFor(modelItem => item.ModuleName)
+            </a>
+        </li>
+    }
+    else if (ViewBag.type == "results")
+    {
+        <li>
+            <a href="@Url.Action("Details", "Risks", new { id = item.abbreviation })">
+                @Html.DisplayFor(modelItem => item.ModuleName)
+            </a>
+        </li>
+    }
+}
+

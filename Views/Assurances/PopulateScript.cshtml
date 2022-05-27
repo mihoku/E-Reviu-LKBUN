@@ -1,0 +1,49 @@
+﻿@model IEnumerable<E_Reviu_LKBUN.Models.UniverseRisk>
+
+@{
+    ViewBag.Title = "Script Reviu";
+    ViewBag.Title2 = ViewBag.lk;
+    ViewBag.Subtitle = "Periode " + ViewBag.SPANReportPeriod;
+}
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card shadow-0 border b-r-0">
+                <div class="card-body">
+                    <center><button class="btn btn-md btn-warning" onclick="javascript:download()"><h4>Download Script</h4></button> <a href="@Url.Action("Details",new { id=ViewBag.ProjectID})" class="btn btn-md btn-info"><h4>Back</h4></a></center><br /><br />
+                    <div style="max-height:1000px; overflow-y:scroll" id="scriptive">
+
+                        DECLARE @@SPANReportPeriod AS VARCHAR(6)
+
+                        DECLARE @@SPANBeginReportPeriod AS VARCHAR(6)
+
+                        DECLARE @@SPANPreviousReportPeriod AS VARCHAR(6)
+
+                        DECLARE @@ErekonReportMonth AS INT
+
+                        DECLARE @@ErekonReportYear AS INT
+
+                        SET @@SPANReportPeriod = '@ViewBag.SPANReportPeriod'
+
+                        SET @@SPANBeginReportPeriod = '@ViewBag.SPANBeginReportPeriod'
+
+                        SET @@SPANPreviousReportPeriod = '@ViewBag.SPANPreviousReportPeriod'
+
+                        SET @@ErekonReportMonth = @ViewBag.ErekonReportMonth
+
+                        SET @@ErekonReportYear = @ViewBag.ErekonReportYear
+
+                        @foreach(var risk in Model)
+                        {
+                            <p>/*=========================*/<br />                        
+                        SELECT @ViewBag.ProjectID ProjectID, "@risk.Risk.Code" CODE, * FROM (</p>
+                            @risk.Script <br />
+                            <p>) @risk.Risk.Code <br />
+                        /*=========================*/
+                        </p>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>

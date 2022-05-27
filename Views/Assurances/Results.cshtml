@@ -1,0 +1,38 @@
+﻿@model E_Reviu_LKBUN.Models.UniverseRisk
+
+@{
+    ViewBag.Title = "Hasil Pengujian";
+    ViewBag.Title2 = ViewBag.ST;
+    ViewBag.Subtitle = "Risiko " + Model.Risk.Code + Model.Universe.ShortName;
+}
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card shadow-0 border b-r-0">
+                @*<div class="card-header card-header-info">
+                <h4 class="card-title">@ViewBag.Title</h4>
+
+                </div>*@
+                <div class="card-body table-responsive">
+                    @*<a href="@Url.Action("PopulateScript",new { id=Model.ID})" class="btn btn-md btn-primary">Download Script Pengujian</a> *@<a href="@Url.Action("RiskProcessingScript",new { id=ViewBag.ProjectID,c=Model.ID})" class="btn btn-md btn-info">Download Script Olah Data</a> <a href="@Url.Action("Details", new { id = ViewBag.ProjectID })" class="btn btn-md btn-warning">Back</a><br /><br />
+                    <table class="display" id="basic-1">
+                        <thead>
+                            <tr>
+                                @foreach (var columnidentifier in Model.OutputColumnList.Where(y => !y.isValueColumn).OrderBy(y => y.ColumnName))
+                                {
+                                    <th>@columnidentifier.ColumnName</th>
+                                }
+                                @foreach (var valuecolumn in Model.OutputColumnList.Where(y => y.isValueColumn).OrderBy(y => y.ColumnName))
+                                {
+                                    <th>@valuecolumn.ColumnName</th>
+                                }
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @{Html.RenderAction("ResultsPopulation", new { id = ViewBag.ProjectID, c = Model.ID }); }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>

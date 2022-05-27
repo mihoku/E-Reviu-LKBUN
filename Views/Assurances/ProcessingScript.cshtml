@@ -1,0 +1,44 @@
+﻿@model IEnumerable<E_Reviu_LKBUN.Models.UniverseRisk>
+
+@{
+    ViewBag.Title = "Script Olah Data";
+    ViewBag.Title2 = "Reviu "+ViewBag.lk;
+    ViewBag.Subtitle = "Periode " + ViewBag.SPANReportPeriod;
+}
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card shadow-0 border b-r-0">
+                <div class="card-body">
+                    <center><button class="btn btn-md btn-warning" onclick="javascript:download()"><h4>Download Script</h4></button> <a href="@Url.Action("Details",new { id=ViewBag.ProjectID})" class="btn btn-md btn-info"><h4>Back</h4></a></center><br /><br />
+                    <div style="max-height:1000px; overflow-y:scroll" id="scriptive">
+
+                        @foreach(var risk in Model)
+                        {
+
+                            foreach (var valuecolumn in risk.OutputColumnList.Where(y => y.isValueColumn).OrderBy(y => y.ColumnName)) {
+                        var dbname = "DJPBN.ITJEN_CA_BABUN_" + @risk.Risk.Code;
+                        <p>
+                            SELECT 1 ID, @ViewBag.ProjectID AssuranceID, '@risk.Risk.Code' RiskCode, @{Html.RenderAction("ColumnIdentifier", new { id = risk.ID });}
+                            '@valuecolumn.ColumnName' ColumnName, CAST(ISNULL(@valuecolumn.ColumnName ,0) AS DECIMAL(38)) ColumnValue, TGL_TARIK ExecutionDate, @valuecolumn.ID ValueID FROM
+                            @dbname
+                            /*=========================================================*/<br />
+                            UNION ALL
+                        </p>
+                            };
+                            
+                        }
+                        <p>SELECT 1 ID, 3 AssuranceID, 'RR1' RiskCode, 
+        KPPN Identifier1,  
+        LEDGER_ID Identifier2,  
+        PERIOD_NAME Identifier3,  
+    '' Identifier4, '' Identifier5, '' Identifier6, '' Identifier7, 
+
+                            'KAS_BLU' ColumnName, ISNULL(KAS_BLU ,0) ColumnValue, TGL_TARIK ExecutionDate, 15 ValueID FROM
+                            DJPBN.ITJEN_CA_BABUN_RR1 where LEDGER_ID=99999999999999999999</p>
+                    <p>ORDER BY RiskCode, ColumnName</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>

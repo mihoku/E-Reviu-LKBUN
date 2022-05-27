@@ -1,0 +1,56 @@
+﻿@model IEnumerable<E_Reviu_LKBUN.Models.RiskCategory>
+
+@{
+    ViewBag.Title = "Kategori";
+    ViewBag.Title2 = "Risiko";
+    ViewBag.Subtitle = "Pelaporan Keuangan BUN";
+}
+
+
+
+<p>
+    @Html.ActionLink("Create New", "Create", null, new { @class="btn btn-warning" })
+</p>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            @*<div class="card-header card-header-warning">
+                <h4 class="card-title">@ViewBag.Title</h4>
+                <p class="card-category">Risiko pelaporan keuangan Bendahara Umum Negara</p>
+            </div>*@
+            <div class="card-body table-responsive">
+                <table class="display" id="basic-1">
+                    <thead>
+                        <tr>
+                            <th>
+                                @Html.DisplayNameFor(model => model.category)
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.abbreviation)
+                            </th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.category)
+                                </td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.abbreviation)
+                                </td>
+                                <td>
+                                    @Html.ActionLink("Edit", "EditCategories", new { id = item.ID }, new { @class = "btn btn-sm btn-primary" })
+                                    @Html.ActionLink("Delete", "DeleteCategories", new { id = item.ID }, new { @class = "btn btn-sm btn-danger" })
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
